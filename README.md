@@ -21,6 +21,7 @@
 - [Админ-панель](#админ-панель)
 - [Начальные данные (seed)](#начальные-данные-seed)
 - [Деплой на сервер](#деплой-на-сервер)
+- [HTTPS и Certbot](#https)
 - [Полезные команды](#полезные-команды)
 - [Решение проблем](#решение-проблем)
 
@@ -241,7 +242,9 @@ cd frontend && npm run dev
 | `DB_PASSWORD` | Пароль БД | `***` |
 | `DB_HOST` | Хост БД | `db` (имя сервиса в compose) |
 | `DB_PORT` | Порт БД | `5432` |
-| `CORS_ALLOWED_ORIGINS` | CORS для API | `http://parkmaximum.ru,https://parkmaximum.ru` |
+| `CORS_ALLOWED_ORIGINS` | CORS для API | `https://parkmaximum.ru,https://www.parkmaximum.ru` |
+| `CSRF_TRUSTED_ORIGINS` | CSRF для admin/API | `https://parkmaximum.ru,https://www.parkmaximum.ru` |
+| `CERTBOT_EMAIL` | Email для Let's Encrypt | `admin@parkmaximum.ru` |
 | `DJANGO_SUPERUSER_USERNAME` | Логин админа | `admin` |
 | `DJANGO_SUPERUSER_EMAIL` | Email админа | `admin@parkmaximum.ru` |
 | `DJANGO_SUPERUSER_PASSWORD` | Пароль админа | `***` |
@@ -449,10 +452,24 @@ git pull
 docker compose up -d --build
 ```
 
-### HTTPS (рекомендуется)
+### HTTPS
 
-Для production рекомендуется добавить SSL через Certbot или reverse proxy с Let's Encrypt.  
-Сейчас Nginx слушает порт 80 — для HTTPS потребуется дополнительная настройка (certbot + volume для сертификатов).
+SSL настраивается через Certbot внутри Docker Compose.
+
+**Первый запуск с HTTPS на сервере:**
+
+```bash
+cd /opt/parkmaximum
+./scripts/setup-ssl.sh
+```
+
+**Автопродление (cron на сервере):**
+
+```cron
+0 4 * * * cd /opt/parkmaximum && ./scripts/renew-ssl.sh >> /var/log/parkmaximum-certbot.log 2>&1
+```
+
+Полная инструкция по деплою: [DEPLOY.md](./DEPLOY.md)
 
 ---
 
