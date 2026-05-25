@@ -1,0 +1,26 @@
+[project]
+name = "park-maximum-backend"
+version = "0.1.0"
+description = "Park Maximum Django backend"
+authors = [
+    {name = "mazazyrik"}
+]
+readme = "README.md"
+requires-python = "^3.12"
+dependencies = [
+    "django (>=6.0.5,<7.0.0)",
+    "djangorestframework (>=3.17.1,<4.0.0)",
+    "pillow (>=12.2.0,<13.0.0)",
+    "openpyxl (>=3.1.5,<4.0.0)",
+    "python-decouple (>=3.8,<4.0)",
+    "django-filter (>=25.2,<26.0)",
+    "django-cors-headers (>=4.9.0,<5.0.0)",
+    "requests (>=2.34.2,<3.0.0)",
+    "gunicorn (>=26.0.0,<27.0.0)",
+    "psycopg2-binary (>=2.9.12,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
