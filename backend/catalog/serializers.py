@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tariff, Car, PopularRoute, RoutePrice
+from .models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
 
 
 class CarSerializer(serializers.ModelSerializer):
@@ -22,7 +22,7 @@ class TariffSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tariff
-        fields = ('id', 'name', 'slug', 'price_per_km', 'cars')
+        fields = ('id', 'name', 'slug', 'price_per_km', 'new_territory_price_per_km', 'cars')
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -48,4 +48,9 @@ class PopularRouteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PopularRoute
-        fields = ('id', 'from_city', 'to_city', 'prices')
+        fields = ('id', 'from_city', 'to_city', 'is_new_territory', 'prices')
+
+
+class PricingConfigSerializer(serializers.Serializer):
+    new_territory_cities = serializers.ListField(child=serializers.CharField())
+    minivan_slugs = serializers.ListField(child=serializers.CharField())

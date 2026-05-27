@@ -8,21 +8,16 @@ const tabs = [
 
 export default function RegionTabs({ activeTab, onTabChange }) {
   return (
-    <section style={{ display: 'flex', width: '100%', height: '237px' }}>
+    <section className='region-tabs'>
       {tabs.map((tab) => (
         <button
           key={tab.id}
+          type='button'
           onClick={() => onTabChange(tab.id)}
+          className='region-tab'
           style={{
-            flex: 1,
             backgroundColor: tab.bg,
             color: activeTab === tab.id && tab.id !== 'south' ? '#FEDA00' : tab.color,
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '40px',
-            fontWeight: '800',
-            fontFamily: 'inherit',
-            transition: 'opacity 0.2s',
             opacity: activeTab === tab.id ? 1 : 0.85,
           }}
         >

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { fetchRoutes } from '../../api'
 
-import cityLugansk from '../../assets/images/city-lugansk.png'
-import cityDonetsk from '../../assets/images/city-donetsk.png'
-import cityRostov from '../../assets/images/city-rostov.png'
-import cityKrasnodar from '../../assets/images/city-krasnodar.png'
-import citySpb from '../../assets/images/city-spb.png'
-import cityCrimea from '../../assets/images/city-crimea.png'
+import cityLugansk from '../../assets/images/city-lugansk.webp'
+import cityDonetsk from '../../assets/images/city-donetsk.webp'
+import cityRostov from '../../assets/images/city-rostov.webp'
+import cityKrasnodar from '../../assets/images/city-krasnodar.webp'
+import citySpb from '../../assets/images/city-spb.webp'
+import cityCrimea from '../../assets/images/city-crimea.webp'
 
 const CITY_IMAGES = {
   'Луганск': cityLugansk,
@@ -18,8 +18,8 @@ const CITY_IMAGES = {
 }
 
 const PRICE_ROWS = [
-  { left: 'standard', right: 'business' },
-  { left: 'comfort', right: 'minivan' },
+  { left: 'standard', right: 'minivan' },
+  { left: 'comfort', right: 'minivan8' },
   { left: 'comfort_plus', right: null },
 ]
 
@@ -35,52 +35,29 @@ function RouteCard({ route }) {
   route.prices.forEach((p) => { priceMap[p.tariff_slug] = p })
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <h3
-        style={{
-          fontSize: '26px',
-          fontWeight: '800',
-          color: '#282828',
-          textAlign: 'center',
-        }}
-      >
-        {title}
-      </h3>
+    <div className='route-card'>
+      <h3 className='route-card-title'>{title}</h3>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 24px' }}>
+      <div className='route-card-prices'>
         {PRICE_ROWS.map((row, i) => {
           const left = priceMap[row.left]
           const right = row.right ? priceMap[row.right] : null
           return (
-            <div key={i} style={{ display: 'contents' }}>
-              <span style={{ fontSize: '18px', color: '#282828', fontWeight: '400' }}>
-                {left
-                  ? `${left.tariff_name} от ${formatPrice(left.price)} руб`
-                  : ''}
+            <div key={i} className='route-card-price-row'>
+              <span className='route-card-price'>
+                {left ? `${left.tariff_name} от ${formatPrice(left.price)} руб` : ''}
               </span>
-              <span style={{ fontSize: '18px', color: '#282828', fontWeight: '400' }}>
-                {right
-                  ? `${right.tariff_name} от ${formatPrice(right.price)} руб`
-                  : ''}
+              <span className='route-card-price'>
+                {right ? `${right.tariff_name} от ${formatPrice(right.price)} руб` : ''}
               </span>
             </div>
           )
         })}
       </div>
 
-      <div
-        style={{
-          borderRadius: '20px',
-          overflow: 'hidden',
-          height: '405px',
-        }}
-      >
+      <div className='route-card-image-wrap'>
         {image && (
-          <img
-            src={image}
-            alt={title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
+          <img src={image} alt={title} className='route-card-image' />
         )}
       </div>
     </div>
@@ -89,60 +66,40 @@ function RouteCard({ route }) {
 
 export default function Routes() {
   const [routes, setRoutes] = useState([])
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
     fetchRoutes()
-      .then((data) => setRoutes(data))
-      .catch(() => {})
+      .then((data) => {
+        setRoutes(data)
+        setLoadError(false)
+      })
+      .catch(() => setLoadError(true))
   }, [])
 
   return (
-    <section
-      style={{ backgroundColor: '#fff', padding: '60px 50px' }}
-      id='routes'
-    >
-      <div style={{ maxWidth: '1340px', margin: '0 auto' }}>
-        <h2
-          style={{
-            fontSize: '40px',
-            fontWeight: '800',
-            color: '#282828',
-            marginBottom: '48px',
-          }}
-        >
-          Популярные маршруты
-        </h2>
+    <section className='section-block' id='routes'>
+      <div className='container-inner'>
+        <h2 className='section-title'>Популярные маршруты</h2>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '60px 92px',
-          }}
-        >
+        {loadError && (
+          <p className='routes-empty'>
+            Не удалось загрузить маршруты. Запустите бэкенд или обновите страницу.
+          </p>
+        )}
+
+        {!loadError && routes.length === 0 && (
+          <p className='routes-empty'>Маршруты загружаются...</p>
+        )}
+
+        <div className='routes-grid'>
           {routes.map((route) => (
             <RouteCard key={route.id} route={route} />
           ))}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '60px' }}>
-          <a
-            href='/calculator'
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '491px',
-              height: '85px',
-              borderRadius: '20px',
-              fontSize: '22px',
-              fontWeight: '700',
-              fontFamily: 'inherit',
-              textDecoration: 'none',
-              backgroundColor: '#282828',
-              color: '#fff',
-            }}
-          >
+        <div className='routes-cta'>
+          <a href='/calculator' className='btn-secondary'>
             Расчитать стоимость
           </a>
         </div>

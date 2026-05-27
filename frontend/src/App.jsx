@@ -15,7 +15,7 @@ function MainPage() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: '153px' }}>
+      <main className='site-main'>
         <Hero />
         <RegionTabs activeTab={activeRegion} onTabChange={setActiveRegion} />
         <About />
