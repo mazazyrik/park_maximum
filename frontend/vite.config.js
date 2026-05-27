@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     cssCodeSplit: true,
-    assetsInlineLimit: 4096,
+    assetsInlineLimit: 0,
     rollupOptions: {
       output: {
         manualChunks: {

@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import logoDark from '../../assets/images/logo-dark.webp'
-import iconMail from '../../assets/images/icon-mail.webp'
-import iconTelegram from '../../assets/images/icon-telegram.webp'
+import { IMAGES } from '../../constants/images'
 import { PHONE_DISPLAY, PHONE_HREF, TELEGRAM_URL } from '../../constants/contacts'
 
 const NAV_ITEMS = [
@@ -53,10 +51,10 @@ function Contacts({ compact = false }) {
         {PHONE_DISPLAY}
       </a>
       <a href='mailto:name@mail.ru' className='header-icon-link'>
-        <img src={iconMail} alt='Email' className='header-icon' />
+        <img src={IMAGES.iconMail} alt='Email' className='header-icon' loading='lazy' decoding='async' />
       </a>
       <a href={TELEGRAM_URL} className='header-icon-link' target='_blank' rel='noreferrer'>
-        <img src={iconTelegram} alt='Telegram' className='header-icon' />
+        <img src={IMAGES.iconTelegram} alt='Telegram' className='header-icon' loading='lazy' decoding='async' />
       </a>
     </div>
   )
@@ -82,7 +80,7 @@ export default function Header() {
     <header className='site-header'>
       <div className='site-header-inner'>
         <Link to='/' className='header-logo'>
-          <img src={logoDark} alt='Максимум' className='header-logo-img' />
+          <img src={IMAGES.logoDark} alt='Максимум' className='header-logo-img' fetchPriority='high' decoding='async' />
         </Link>
 
         <div className='header-nav-wrap header-nav-wrap--desktop'>

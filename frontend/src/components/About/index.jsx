@@ -1,4 +1,4 @@
-import logoLight from '../../assets/images/logo-light.webp'
+import { IMAGES } from '../../constants/images'
 
 export default function About() {
   return (
@@ -9,7 +9,13 @@ export default function About() {
 
           <div className='about-body'>
             <div className='about-logo-wrap'>
-              <img src={logoLight} alt='Максимум' className='about-logo' />
+              <img
+                src={IMAGES.logoLight}
+                alt='Максимум'
+                className='about-logo'
+                loading='lazy'
+                decoding='async'
+              />
             </div>
 
             <p className='about-text'>

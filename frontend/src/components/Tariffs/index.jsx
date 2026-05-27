@@ -1,33 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { IMAGES, CAR_IMAGES } from '../../constants/images'
 import { fetchTariffs } from '../../api'
-
-import carSolaris from '../../assets/images/car-solaris.webp'
-import kiaRio from '../../assets/images/kia-rio.webp'
-import skodaRapid from '../../assets/images/skoda-rapid.webp'
-import hyundaiElantra from '../../assets/images/hyundai-elantra.webp'
-import belgeeX50 from '../../assets/images/belgee-x50.webp'
-import cheryTiggo from '../../assets/images/chery-tiggo.webp'
-import toyotaCamry from '../../assets/images/toyota-camry.webp'
-import kiaOptima from '../../assets/images/kia-optima.webp'
-import belgeeX70 from '../../assets/images/belgee-x70.webp'
-import cheryArrizo8 from '../../assets/images/chery-arrizo8.webp'
-import mercedesVito from '../../assets/images/mercedes-vito.webp'
-import mercedesSprinter from '../../assets/images/mercedes-sprinter.webp'
-
-const LOCAL_IMAGES = {
-  'Hyundai Solaris': carSolaris,
-  'Kia Rio': kiaRio,
-  'Skoda Rapid': skodaRapid,
-  'Hyundai Elantra': hyundaiElantra,
-  'Belgee X50': belgeeX50,
-  'Chery Tiggo': cheryTiggo,
-  'Toyota Camry': toyotaCamry,
-  'Kia Optima': kiaOptima,
-  'Belgee X70': belgeeX70,
-  'Chery Arrizo 8': cheryArrizo8,
-  'Mercedes Vito': mercedesVito,
-  'Mercedes Sprinter': mercedesSprinter,
-}
 
 const FALLBACK_TARIFFS = [
   {
@@ -36,9 +9,9 @@ const FALLBACK_TARIFFS = [
     price: '30 руб/км',
     extra: '+5 руб/км',
     cars: [
-      { name: 'Hyundai Solaris', image: carSolaris },
-      { name: 'Kia Rio', image: kiaRio },
-      { name: 'Skoda Rapid', image: skodaRapid },
+      { name: 'Hyundai Solaris', image: IMAGES.carSolaris },
+      { name: 'Kia Rio', image: IMAGES.kiaRio },
+      { name: 'Skoda Rapid', image: IMAGES.skodaRapid },
     ],
   },
   {
@@ -47,9 +20,9 @@ const FALLBACK_TARIFFS = [
     price: '35 руб/км',
     extra: '+5 руб/км',
     cars: [
-      { name: 'Hyundai Elantra', image: hyundaiElantra },
-      { name: 'Belgee X50', image: belgeeX50 },
-      { name: 'Chery Tiggo', image: cheryTiggo },
+      { name: 'Hyundai Elantra', image: IMAGES.hyundaiElantra },
+      { name: 'Belgee X50', image: IMAGES.belgeeX50 },
+      { name: 'Chery Tiggo', image: IMAGES.cheryTiggo },
     ],
   },
   {
@@ -58,10 +31,10 @@ const FALLBACK_TARIFFS = [
     price: '40 руб/км',
     extra: '+5 руб/км',
     cars: [
-      { name: 'Toyota Camry', image: toyotaCamry },
-      { name: 'Kia Optima', image: kiaOptima },
-      { name: 'Chery Arrizo 8', image: cheryArrizo8 },
-      { name: 'Belgee X70', image: belgeeX70 },
+      { name: 'Toyota Camry', image: IMAGES.toyotaCamry },
+      { name: 'Kia Optima', image: IMAGES.kiaOptima },
+      { name: 'Chery Arrizo 8', image: IMAGES.cheryArrizo8 },
+      { name: 'Belgee X70', image: IMAGES.belgeeX70 },
     ],
   },
   {
@@ -69,14 +42,14 @@ const FALLBACK_TARIFFS = [
     label: 'Минивен',
     price: '50 руб/км',
     extra: '+5 руб/км',
-    cars: [{ name: 'Mercedes Vito', image: mercedesVito }],
+    cars: [{ name: 'Mercedes Vito', image: IMAGES.mercedesVito }],
   },
   {
     id: 'minivan8',
     label: 'Минивен 8+',
     price: '70 руб/км',
     extra: '+5 руб/км',
-    cars: [{ name: 'Mercedes Sprinter', image: mercedesSprinter }],
+    cars: [{ name: 'Mercedes Sprinter', image: IMAGES.mercedesSprinter }],
   },
 ]
 
@@ -90,7 +63,7 @@ function buildTariffsFromApi(apiData) {
       extra: extraPerKm > 0 ? `+${extraPerKm} руб/км` : '—',
       cars: t.cars.map((car) => ({
         name: car.name,
-        image: car.photo_url || LOCAL_IMAGES[car.name] || null,
+        image: car.photo_url || CAR_IMAGES[car.name] || null,
       })),
     }
   })
@@ -106,6 +79,7 @@ export default function Tariffs() {
   const [tariffs, setTariffs] = useState(FALLBACK_TARIFFS)
   const [activeTabIdx, setActiveTabIdx] = useState(0)
   const [carIdx, setCarIdx] = useState(0)
+  const tabRefs = useRef({})
 
   useEffect(() => {
     fetchTariffs()
@@ -114,6 +88,13 @@ export default function Tariffs() {
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    const tabEl = tabRefs.current[activeTabIdx]
+    if (tabEl) {
+      tabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+    }
+  }, [activeTabIdx])
 
   const tariff = tariffs[activeTabIdx]
   const car = tariff.cars[carIdx]
@@ -151,6 +132,7 @@ export default function Tariffs() {
             {tariffs.map((t, i) => (
               <button
                 key={t.id}
+                ref={(el) => { tabRefs.current[i] = el }}
                 type='button'
                 onClick={() => switchTab(i)}
                 className={`tariff-tab ${activeTabIdx === i ? 'tariff-tab--active' : ''}`}
@@ -172,6 +154,8 @@ export default function Tariffs() {
                   src={car.image}
                   alt={car.name}
                   className='tariff-photo'
+                  loading='lazy'
+                  decoding='async'
                 />
               ) : (
                 <span className='tariff-photo-placeholder'>{car.name}</span>
