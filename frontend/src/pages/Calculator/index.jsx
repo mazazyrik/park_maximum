@@ -353,8 +353,7 @@ export default function Calculator() {
                     type='datetime-local'
                     value={datetime}
                     onChange={(e) => setDatetime(e.target.value)}
-                    className='calc-input'
-                    style={{ cursor: 'pointer', colorScheme: 'light' }}
+                    className='calc-input calc-input--datetime'
                   />
                 </div>
               </div>
