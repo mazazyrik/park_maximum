@@ -1,5 +1,4 @@
-import iconMail from '../../assets/images/icon-mail.webp'
-import iconTelegram from '../../assets/images/icon-telegram.webp'
+import { IMAGES } from '../../constants/images'
 import { PHONE_DISPLAY, PHONE_HREF, TELEGRAM_URL } from '../../constants/contacts'
 
 export default function Footer() {
@@ -8,10 +7,10 @@ export default function Footer() {
       <div className='site-footer-inner'>
         <div className='site-footer-contacts'>
           <a href='mailto:name@mail.ru' className='header-icon-link'>
-            <img src={iconMail} alt='Email' className='header-icon' />
+            <img src={IMAGES.iconMail} alt='Email' className='header-icon' loading='lazy' decoding='async' />
           </a>
           <a href={TELEGRAM_URL} target='_blank' rel='noreferrer' className='header-icon-link'>
-            <img src={iconTelegram} alt='Telegram' className='header-icon' />
+            <img src={IMAGES.iconTelegram} alt='Telegram' className='header-icon' loading='lazy' decoding='async' />
           </a>
           <div className='site-footer-text'>
             <a href={PHONE_HREF} className='site-footer-line'>

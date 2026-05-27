@@ -6,7 +6,7 @@ from .models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
 class CarInline(admin.TabularInline):
     model = Car
     extra = 1
-    fields = ('name', 'photo', 'extra_price_per_km', 'is_active', 'sort_order')
+    fields = ('name', 'photo', 'external_photo_url', 'extra_price_per_km', 'is_active', 'sort_order')
 
 
 @admin.register(Tariff)
@@ -30,8 +30,9 @@ class CarAdmin(admin.ModelAdmin):
 
     @admin.display(description='Фото')
     def preview(self, obj):
-        if obj.photo:
-            return format_html('<img src="{}" style="height:40px;border-radius:4px">', obj.photo.url)
+        url = obj.external_photo_url or (obj.photo.url if obj.photo else '')
+        if url:
+            return format_html('<img src="{}" style="height:40px;border-radius:4px">', url)
         return '—'
 
 

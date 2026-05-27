@@ -33,6 +33,7 @@ class Car(models.Model):
     )
     name = models.CharField('Название автомобиля', max_length=200)
     photo = models.ImageField('Фото', upload_to='cars/', blank=True)
+    external_photo_url = models.URLField('URL фото', blank=True)
     extra_price_per_km = models.DecimalField(
         'Доп. цена за км (руб)',
         max_digits=8,

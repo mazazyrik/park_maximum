@@ -1,4 +1,4 @@
-import heroCar from '../../assets/images/hero-car.webp'
+import { IMAGES } from '../../constants/images'
 
 export default function Hero() {
   return (
@@ -14,7 +14,13 @@ export default function Hero() {
         </div>
 
         <div className='hero-image-wrap'>
-          <img src={heroCar} alt='Автомобиль' className='hero-image' />
+          <img
+            src={IMAGES.heroCar}
+            alt='Автомобиль'
+            className='hero-image'
+            fetchPriority='high'
+            decoding='async'
+          />
         </div>
       </div>
     </section>

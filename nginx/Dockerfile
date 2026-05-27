@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+ARG VITE_STATIC_URL=https://cdn.jsdelivr.net/gh/mazazyrik/park_maximum@main/frontend/src/assets/images
+ENV VITE_STATIC_URL=$VITE_STATIC_URL
+
 COPY frontend/package*.json ./
 RUN npm ci
 

@@ -1,21 +1,6 @@
 import { useState, useEffect } from 'react'
 import { fetchRoutes } from '../../api'
-
-import cityLugansk from '../../assets/images/city-lugansk.webp'
-import cityDonetsk from '../../assets/images/city-donetsk.webp'
-import cityRostov from '../../assets/images/city-rostov.webp'
-import cityKrasnodar from '../../assets/images/city-krasnodar.webp'
-import citySpb from '../../assets/images/city-spb.webp'
-import cityCrimea from '../../assets/images/city-crimea.webp'
-
-const CITY_IMAGES = {
-  'Луганск': cityLugansk,
-  'Донецк': cityDonetsk,
-  'Ростов': cityRostov,
-  'Краснодарский край': cityKrasnodar,
-  'Санкт-Петербург': citySpb,
-  'Крым': cityCrimea,
-}
+import { CITY_IMAGES } from '../../constants/images'
 
 const PRICE_ROWS = [
   { left: 'standard', right: 'minivan' },
@@ -57,7 +42,13 @@ function RouteCard({ route }) {
 
       <div className='route-card-image-wrap'>
         {image && (
-          <img src={image} alt={title} className='route-card-image' />
+          <img
+            src={image}
+            alt={title}
+            className='route-card-image'
+            loading='lazy'
+            decoding='async'
+          />
         )}
       </div>
     </div>
