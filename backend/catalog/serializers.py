@@ -11,6 +11,8 @@ class CarSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'photo_url', 'extra_price_per_km', 'total_price_per_km', 'sort_order')
 
     def get_photo_url(self, obj):
+        if obj.external_photo_url:
+            return obj.external_photo_url
         request = self.context.get('request')
         if obj.photo and request:
             return request.build_absolute_uri(obj.photo.url)
