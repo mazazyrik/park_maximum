@@ -127,8 +127,6 @@ ROUTES_DATA = [
     },
 ]
 
-DEPRECATED_TARIFF_SLUGS = ['business']
-
 
 def route_price(tariff, distance_km, is_new_territory):
     if is_new_territory:
@@ -157,7 +155,6 @@ class Command(BaseCommand):
         tariff_map = self._seed_tariffs()
         self._seed_routes(tariff_map)
         self._seed_new_territory_cities()
-        self._cleanup_deprecated_tariffs()
 
         self.stdout.write(self.style.SUCCESS('Готово!'))
 
@@ -239,8 +236,3 @@ class Command(BaseCommand):
                 defaults={'is_active': True},
             )
         self.stdout.write(f'Города новых территорий: {len(NEW_TERRITORY_CITIES)}')
-
-    def _cleanup_deprecated_tariffs(self):
-        deleted, _ = Tariff.objects.filter(slug__in=DEPRECATED_TARIFF_SLUGS).delete()
-        if deleted:
-            self.stdout.write(f'Удалены устаревшие тарифы: {deleted}')
