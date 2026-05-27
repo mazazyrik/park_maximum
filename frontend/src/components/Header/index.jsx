@@ -1,51 +1,123 @@
+import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import logoDark from '../../assets/images/logo-dark.png'
-import iconMail from '../../assets/images/icon-mail.png'
-import iconTelegram from '../../assets/images/icon-telegram.png'
+import logoDark from '../../assets/images/logo-dark.webp'
+import iconMail from '../../assets/images/icon-mail.webp'
+import iconTelegram from '../../assets/images/icon-telegram.webp'
+import { PHONE_DISPLAY, PHONE_HREF, TELEGRAM_URL } from '../../constants/contacts'
+
+const NAV_ITEMS = [
+  { type: 'link', to: '/', label: 'Главная' },
+  { type: 'hash', hash: '#routes', label: 'Маршруты' },
+  { type: 'hash', hash: '#tariffs', label: 'Тарифы' },
+  { type: 'link', to: '/calculator', label: 'Калькулятор' },
+]
+
+function NavLinks({ isCalc, onNavigate, className = '' }) {
+  const hashLink = (hash) => (isCalc ? `/${hash}` : hash)
+
+  return (
+    <nav className={`header-nav ${className}`.trim()}>
+      {NAV_ITEMS.map((item) => {
+        if (item.type === 'link') {
+          return (
+            <Link
+              key={item.label}
+              to={item.to}
+              onClick={onNavigate}
+              className='header-nav-link'
+            >
+              {item.label}
+            </Link>
+          )
+        }
+
+        return (
+          <a
+            key={item.label}
+            href={hashLink(item.hash)}
+            onClick={onNavigate}
+            className='header-nav-link'
+          >
+            {item.label}
+          </a>
+        )
+      })}
+    </nav>
+  )
+}
+
+function Contacts({ compact = false }) {
+  return (
+    <div className={`header-contacts ${compact ? 'header-contacts--compact' : ''}`.trim()}>
+      <a href={PHONE_HREF} className='header-phone'>
+        {PHONE_DISPLAY}
+      </a>
+      <a href='mailto:name@mail.ru' className='header-icon-link'>
+        <img src={iconMail} alt='Email' className='header-icon' />
+      </a>
+      <a href={TELEGRAM_URL} className='header-icon-link' target='_blank' rel='noreferrer'>
+        <img src={iconTelegram} alt='Telegram' className='header-icon' />
+      </a>
+    </div>
+  )
+}
 
 export default function Header() {
   const { pathname } = useLocation()
   const isCalc = pathname === '/calculator'
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  const hashLink = (hash) => isCalc ? `/${hash}` : hash
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [menuOpen])
 
   return (
-    <header
-      className='fixed top-0 left-0 right-0 z-50 flex items-center'
-      style={{ backgroundColor: '#282828', height: '153px' }}
-    >
-      <div className='w-full max-w-[1440px] mx-auto px-[50px] flex items-center justify-between'>
-        <Link to='/' className='flex-shrink-0'>
-          <img src={logoDark} alt='Максимум' style={{ height: '128px', width: '333px', objectFit: 'contain' }} />
+    <header className='site-header'>
+      <div className='site-header-inner'>
+        <Link to='/' className='header-logo'>
+          <img src={logoDark} alt='Максимум' className='header-logo-img' />
         </Link>
 
-        <nav className='flex items-center gap-[60px]'>
-          <Link to='/' className='text-white font-normal text-[22px] hover:text-yellow transition-colors'>
-            Главная
-          </Link>
-          <a href={hashLink('#routes')} className='text-white font-normal text-[22px] hover:text-yellow transition-colors'>
-            Маршруты
-          </a>
-          <a href={hashLink('#tariffs')} className='text-white font-normal text-[22px] hover:text-yellow transition-colors'>
-            Тарифы
-          </a>
-          <Link to='/calculator' className='text-white font-normal text-[22px] hover:text-yellow transition-colors'>
-            Калькулятор
-          </Link>
-        </nav>
+        <div className='header-nav-wrap header-nav-wrap--desktop'>
+          <NavLinks isCalc={isCalc} />
+        </div>
 
-        <div className='flex items-center gap-[24px]'>
-          <span className='text-white font-semibold text-[22px] whitespace-nowrap'>
-            +7 (999) 999 99-99
-          </span>
-          <a href='mailto:name@mail.ru' className='flex-shrink-0'>
-            <img src={iconMail} alt='Email' style={{ width: '50px', height: '50px' }} />
-          </a>
-          <a href='https://t.me/' className='flex-shrink-0' target='_blank' rel='noreferrer'>
-            <img src={iconTelegram} alt='Telegram' style={{ width: '50px', height: '50px' }} />
-          </a>
+        <div className='header-contacts header-contacts--desktop'>
+          <Contacts />
+        </div>
+
+        <div className='header-mobile-bar'>
+          <Contacts compact />
+          <button
+            type='button'
+            className='header-burger'
+            aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
         </div>
       </div>
+
+      <div className='site-header-nav-row'>
+        <NavLinks isCalc={isCalc} />
+      </div>
+
+      {menuOpen && (
+        <div className='header-mobile-menu'>
+          <NavLinks isCalc={isCalc} onNavigate={() => setMenuOpen(false)} className='header-nav--mobile' />
+        </div>
+      )}
     </header>
   )
 }

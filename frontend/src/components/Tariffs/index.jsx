@@ -1,20 +1,20 @@
 import { useState, useEffect } from 'react'
 import { fetchTariffs } from '../../api'
 
-import carSolaris from '../../assets/images/car-solaris.png'
-import kiaRio from '../../assets/images/kia-rio.jpg'
-import skodaRapid from '../../assets/images/skoda-rapid.jpg'
-import hyundaiElantra from '../../assets/images/hyundai-elantra.jpg'
-import belgeeX50 from '../../assets/images/belgee-x50.jpg'
-import cheryTiggo from '../../assets/images/chery-tiggo.jpg'
-import toyotaCamry from '../../assets/images/toyota-camry.jpg'
-import kiaOptima from '../../assets/images/kia-optima.jpg'
-import belgeeX70 from '../../assets/images/belgee-x70.jpg'
-import cheryArrizo8 from '../../assets/images/chery-arrizo8.jpg'
-import mercedesE from '../../assets/images/mercedes-e.jpg'
-import bmw5 from '../../assets/images/bmw-5.jpg'
-import mercedesVito from '../../assets/images/mercedes-vito.jpg'
-import mercedesSprinter from '../../assets/images/mercedes-sprinter.jpg'
+import carSolaris from '../../assets/images/car-solaris.webp'
+import kiaRio from '../../assets/images/kia-rio.webp'
+import skodaRapid from '../../assets/images/skoda-rapid.webp'
+import hyundaiElantra from '../../assets/images/hyundai-elantra.webp'
+import belgeeX50 from '../../assets/images/belgee-x50.webp'
+import cheryTiggo from '../../assets/images/chery-tiggo.webp'
+import toyotaCamry from '../../assets/images/toyota-camry.webp'
+import kiaOptima from '../../assets/images/kia-optima.webp'
+import belgeeX70 from '../../assets/images/belgee-x70.webp'
+import cheryArrizo8 from '../../assets/images/chery-arrizo8.webp'
+import mercedesE from '../../assets/images/mercedes-e.webp'
+import bmw5 from '../../assets/images/bmw-5.webp'
+import mercedesVito from '../../assets/images/mercedes-vito.webp'
+import mercedesSprinter from '../../assets/images/mercedes-sprinter.webp'
 
 const LOCAL_IMAGES = {
   'Hyundai Solaris': carSolaris,
@@ -48,7 +48,7 @@ const FALLBACK_TARIFFS = [
   {
     id: 'comfort',
     label: 'Комфорт',
-    price: '40 руб/км',
+    price: '35 руб/км',
     extra: '+5 руб/км',
     cars: [
       { name: 'Hyundai Elantra', image: hyundaiElantra },
@@ -59,7 +59,7 @@ const FALLBACK_TARIFFS = [
   {
     id: 'comfort_plus',
     label: 'Комфорт +',
-    price: '55 руб/км',
+    price: '40 руб/км',
     extra: '+5 руб/км',
     cars: [
       { name: 'Toyota Camry', image: toyotaCamry },
@@ -69,9 +69,9 @@ const FALLBACK_TARIFFS = [
     ],
   },
   {
-    id: 'business',
-    label: 'Бизнес',
-    price: '65 руб/км',
+    id: 'compact_van',
+    label: 'Компактвэн',
+    price: '50 руб/км',
     extra: '+5 руб/км',
     cars: [
       { name: 'Mercedes E-Class', image: mercedesE },
@@ -81,14 +81,14 @@ const FALLBACK_TARIFFS = [
   {
     id: 'minivan',
     label: 'Минивен',
-    price: '60 руб/км',
+    price: '50 руб/км',
     extra: '+5 руб/км',
     cars: [{ name: 'Mercedes Vito', image: mercedesVito }],
   },
   {
     id: 'minivan8',
     label: 'Минивен 8+',
-    price: '80 руб/км',
+    price: '70 руб/км',
     extra: '+5 руб/км',
     cars: [{ name: 'Mercedes Sprinter', image: mercedesSprinter }],
   },
@@ -111,30 +111,7 @@ function buildTariffsFromApi(apiData) {
 }
 
 const ArrowBtn = ({ dir, onClick }) => (
-  <button
-    onClick={onClick}
-    style={{
-      position: 'absolute',
-      [dir === 'left' ? 'left' : 'right']: '12px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      background: 'rgba(255,255,255,0.75)',
-      border: 'none',
-      borderRadius: '50%',
-      width: '52px',
-      height: '52px',
-      cursor: 'pointer',
-      fontSize: '30px',
-      color: '#282828',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontWeight: '300',
-      lineHeight: 1,
-      transition: 'background 0.2s',
-      zIndex: 2,
-    }}
-  >
+  <button type='button' onClick={onClick} className={`tariff-arrow tariff-arrow--${dir}`}>
     {dir === 'left' ? '‹' : '›'}
   </button>
 )
@@ -177,116 +154,41 @@ export default function Tariffs() {
   }
 
   return (
-    <section style={{ backgroundColor: '#fff', padding: '60px 50px' }} id='tariffs'>
-      <div style={{ maxWidth: '1340px', margin: '0 auto' }}>
-        <h2
-          style={{
-            fontSize: '40px',
-            fontWeight: '800',
-            color: '#282828',
-            marginBottom: '40px',
-          }}
-        >
-          Тарифы
-        </h2>
+    <section className='section-block tariffs-section' id='tariffs'>
+      <div className='container-inner'>
+        <h2 className='section-title'>Тарифы</h2>
 
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0',
-            borderBottom: '2px solid #e0e0e0',
-            marginBottom: '40px',
-          }}
-        >
-          <button
-            onClick={prevTab}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '28px',
-              color: '#282828',
-              padding: '0 12px 12px',
-              marginBottom: '-2px',
-              lineHeight: 1,
-            }}
-          >
-            ‹
-          </button>
+        <div className='tariff-tabs-bar'>
+          <button type='button' onClick={prevTab} className='tariff-tabs-arrow'>‹</button>
 
-          {tariffs.map((t, i) => (
-            <button
-              key={t.id}
-              onClick={() => switchTab(i)}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-                fontSize: '22px',
-                fontWeight: '800',
-                color: '#282828',
-                padding: '0 20px 12px',
-                borderBottom: activeTabIdx === i ? '3px solid #282828' : '3px solid transparent',
-                marginBottom: '-2px',
-                transition: 'border-color 0.2s',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
+          <div className='tariff-tabs-scroll'>
+            {tariffs.map((t, i) => (
+              <button
+                key={t.id}
+                type='button'
+                onClick={() => switchTab(i)}
+                className={`tariff-tab ${activeTabIdx === i ? 'tariff-tab--active' : ''}`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-          <button
-            onClick={nextTab}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '28px',
-              color: '#282828',
-              padding: '0 12px 12px',
-              marginBottom: '-2px',
-              lineHeight: 1,
-            }}
-          >
-            ›
-          </button>
+          <button type='button' onClick={nextTab} className='tariff-tabs-arrow'>›</button>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            gap: '60px',
-            backgroundColor: '#D9D9D9',
-            borderRadius: '20px',
-            padding: '40px 50px',
-            alignItems: 'center',
-          }}
-        >
-          <div style={{ position: 'relative', width: '608px', flexShrink: 0 }}>
-            <div
-              style={{
-                width: '608px',
-                height: '405px',
-                backgroundColor: '#fff',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+        <div className='tariff-card'>
+          <div className='tariff-gallery'>
+            <div className='tariff-photo-wrap'>
               {car.image ? (
                 <img
                   key={`${activeTabIdx}-${carIdx}`}
                   src={car.image}
                   alt={car.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  className='tariff-photo'
                 />
               ) : (
-                <span style={{ color: '#aaa', fontSize: '16px' }}>{car.name}</span>
+                <span className='tariff-photo-placeholder'>{car.name}</span>
               )}
             </div>
 
@@ -298,79 +200,36 @@ export default function Tariffs() {
             )}
 
             {tariff.cars.length > 1 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: '12px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: '6px',
-                }}
-              >
+              <div className='tariff-dots'>
                 {tariff.cars.map((_, i) => (
                   <button
                     key={i}
+                    type='button'
                     onClick={() => setCarIdx(i)}
-                    style={{
-                      width: i === carIdx ? '24px' : '8px',
-                      height: '8px',
-                      borderRadius: '4px',
-                      background: i === carIdx ? '#282828' : 'rgba(40,40,40,0.3)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      padding: 0,
-                      transition: 'all 0.25s',
-                    }}
+                    className={`tariff-dot ${i === carIdx ? 'tariff-dot--active' : ''}`}
                   />
                 ))}
               </div>
             )}
           </div>
 
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div className='tariff-info'>
             <div>
-              <p style={{ fontSize: '18px', color: '#5B5B5B', marginBottom: '4px' }}>
-                {tariff.label}
-              </p>
-              <h3 style={{ fontSize: '32px', fontWeight: '800', color: '#282828' }}>
-                {car.name}
-              </h3>
+              <p className='tariff-info-label'>{tariff.label}</p>
+              <h3 className='tariff-info-title'>{car.name}</h3>
               {tariff.cars.length > 1 && (
-                <p style={{ fontSize: '16px', color: '#5B5B5B', marginTop: '4px' }}>
-                  {carIdx + 1} / {tariff.cars.length}
-                </p>
+                <p className='tariff-info-count'>{carIdx + 1} / {tariff.cars.length}</p>
               )}
             </div>
 
-            <p style={{ fontSize: '20px', color: '#282828' }}>
-              Цена за 1км пути{' '}
-              <span style={{ fontWeight: '800' }}>{tariff.price}</span>
+            <p className='tariff-info-line'>
+              Цена за 1км пути <span>{tariff.price}</span>
             </p>
-            <p style={{ fontSize: '20px', color: '#282828' }}>
-              Выбор конкретного автомобиля{' '}
-              <span style={{ fontWeight: '800' }}>{tariff.extra}</span>
+            <p className='tariff-info-line'>
+              Выбор конкретного автомобиля <span>{tariff.extra}</span>
             </p>
 
-            <a
-              href='/calculator'
-              style={{
-                alignSelf: 'flex-start',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '300px',
-                height: '85px',
-                borderRadius: '20px',
-                fontSize: '22px',
-                fontWeight: '800',
-                fontFamily: 'inherit',
-                textDecoration: 'none',
-                backgroundColor: '#282828',
-                color: '#FEDA00',
-                marginTop: '8px',
-              }}
-            >
+            <a href='/calculator' className='btn-primary tariff-order-btn'>
               Заказать
             </a>
           </div>

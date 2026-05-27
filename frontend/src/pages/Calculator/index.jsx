@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import OrderModal from './OrderModal'
-import { fetchTariffs } from '../../api'
+import { fetchTariffs, fetchPricingConfig } from '../../api'
+import { isNewTerritoryRoute, mapTariffsForCalculator } from '../../utils/pricing'
 
 const GEOCODER_KEY = 'ae36e2e8-3202-4ead-8128-cca559d477a5'
 
 const FALLBACK_TARIFFS = [
-  { id: 2, slug: 'standard', label: 'Стандарт', price: 30 },
-  { id: 3, slug: 'comfort', label: 'Комфорт', price: 40 },
-  { id: 4, slug: 'comfort_plus', label: 'Комфорт +', price: 55 },
-  { id: 5, slug: 'business', label: 'Бизнес', price: 65 },
-  { id: 6, slug: 'minivan', label: 'Минивен', price: 60 },
-  { id: 7, slug: 'minivan8', label: 'Минивен 8+', price: 80 },
+  { id: 'standard', slug: 'standard', label: 'Стандарт', price: 30 },
+  { id: 'comfort', slug: 'comfort', label: 'Комфорт', price: 35 },
+  { id: 'comfort_plus', slug: 'comfort_plus', label: 'Комфорт +', price: 40 },
+  { id: 'compact_van', slug: 'compact_van', label: 'Компактвэн', price: 50 },
+  { id: 'minivan', slug: 'minivan', label: 'Минивен', price: 50 },
+  { id: 'minivan8', slug: 'minivan8', label: 'Минивен 8+', price: 70 },
 ]
 
 async function geocodeYandex(query) {
@@ -84,44 +85,11 @@ function haversine([lat1, lon1], [lat2, lon2]) {
   return Math.round(2 * R * Math.asin(Math.sqrt(a)))
 }
 
-const labelStyle = {
-  display: 'block',
-  fontWeight: '800',
-  fontSize: '20px',
-  color: '#282828',
-  marginBottom: '12px',
-}
-
-const inputStyle = {
-  width: '100%',
-  height: '64px',
-  border: '2px solid #282828',
-  borderRadius: '50px',
-  padding: '0 60px 0 28px',
-  fontSize: '18px',
-  fontFamily: 'inherit',
-  outline: 'none',
-  background: '#fff',
-  color: '#282828',
-  boxSizing: 'border-box',
-}
-
-const arrowStyle = {
-  position: 'absolute',
-  right: '26px',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  fontSize: '22px',
-  color: '#282828',
-  pointerEvents: 'none',
-  lineHeight: 1,
-}
-
 function SuggestInput({ label, value, onChange, onSelect, placeholder, suggestions, showSugg, onFocus, onBlur }) {
   return (
     <div>
-      <label style={labelStyle}>{label}</label>
-      <div style={{ position: 'relative' }}>
+      <label className='calc-label'>{label}</label>
+      <div className='calc-input-wrap'>
         <input
           type='text'
           value={value}
@@ -129,40 +97,19 @@ function SuggestInput({ label, value, onChange, onSelect, placeholder, suggestio
           onFocus={onFocus}
           onBlur={onBlur}
           placeholder={placeholder}
-          style={inputStyle}
+          className='calc-input'
         />
-        <span style={arrowStyle}>›</span>
+        <span className='calc-arrow'>›</span>
         {showSugg && suggestions.length > 0 && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 'calc(100% + 6px)',
-              left: 0,
-              right: 0,
-              background: '#fff',
-              border: '1px solid #e0e0e0',
-              borderRadius: '16px',
-              boxShadow: '0 6px 24px rgba(0,0,0,0.1)',
-              zIndex: 200,
-              overflow: 'hidden',
-            }}
-          >
+          <div className='calc-suggest'>
             {suggestions.map((s, i) => (
               <div
                 key={i}
+                className='calc-suggest-item'
                 onMouseDown={(e) => {
                   e.preventDefault()
                   onSelect(s)
                 }}
-                style={{
-                  padding: '12px 24px',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  color: '#282828',
-                  borderBottom: i < suggestions.length - 1 ? '1px solid #f5f5f5' : 'none',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#f8f8f8')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
               >
                 {s.displayName}
               </div>
@@ -175,7 +122,11 @@ function SuggestInput({ label, value, onChange, onSelect, placeholder, suggestio
 }
 
 export default function Calculator() {
-  const [tariffs, setTariffs] = useState(FALLBACK_TARIFFS)
+  const [rawTariffs, setRawTariffs] = useState([])
+  const [pricingConfig, setPricingConfig] = useState({
+    new_territory_cities: ['Луганск', 'Донецк'],
+    minivan_slugs: ['minivan', 'minivan8'],
+  })
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [fromCoords, setFromCoords] = useState(null)
@@ -199,17 +150,32 @@ export default function Calculator() {
   const suggestTimer = useRef(null)
   const routeTimer = useRef(null)
 
+  const isNewTerritory = isNewTerritoryRoute(
+    from,
+    to,
+    pricingConfig.new_territory_cities,
+  )
+
+  const tariffs = useMemo(() => {
+    if (rawTariffs.length > 0) {
+      return mapTariffsForCalculator(
+        rawTariffs,
+        isNewTerritory,
+        pricingConfig.minivan_slugs,
+      )
+    }
+    if (!isNewTerritory) return FALLBACK_TARIFFS
+    return FALLBACK_TARIFFS.map((t) => ({
+      ...t,
+      price: pricingConfig.minivan_slugs.includes(t.slug) ? 150 : 100,
+    }))
+  }, [rawTariffs, isNewTerritory, pricingConfig.minivan_slugs])
+
   useEffect(() => {
-    fetchTariffs()
-      .then((data) => {
-        if (data.length > 0) {
-          setTariffs(data.map((t) => ({
-            id: t.id,
-            slug: t.slug,
-            label: t.name,
-            price: parseFloat(t.price_per_km),
-          })))
-        }
+    Promise.all([fetchTariffs(), fetchPricingConfig()])
+      .then(([tariffData, config]) => {
+        if (tariffData.length > 0) setRawTariffs(tariffData)
+        if (config) setPricingConfig(config)
       })
       .catch(() => {})
   }, [])
@@ -325,14 +291,18 @@ export default function Calculator() {
   return (
     <>
       <Header />
-      <main style={{ paddingTop: '153px' }}>
-        <section style={{ padding: '64px 50px 80px', background: '#fff', minHeight: 'calc(100vh - 153px)' }}>
-          <div style={{ maxWidth: '1340px', margin: '0 auto' }}>
-            <h1 style={{ fontSize: '40px', fontWeight: '800', color: '#282828', marginBottom: '48px' }}>
-              Калькулятор
-            </h1>
+      <main className='site-main'>
+        <section className='calc-section'>
+          <div className='container-inner'>
+            <h1 className='calc-title'>Калькулятор</h1>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', marginBottom: '40px' }}>
+            {isNewTerritory && (
+              <p className='calc-territory-note'>
+                Маршрут затрагивает новые территории — применён тариф новых территорий
+              </p>
+            )}
+
+            <div className='calc-grid'>
               <SuggestInput
                 label='Откуда'
                 value={from}
@@ -357,20 +327,14 @@ export default function Calculator() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '48px', marginBottom: '40px' }}>
+            <div className='calc-grid'>
               <div>
-                <label style={labelStyle}>Тариф</label>
-                <div style={{ position: 'relative' }}>
+                <label className='calc-label'>Тариф</label>
+                <div className='calc-input-wrap'>
                   <select
                     value={tariffId}
                     onChange={(e) => setTariffId(e.target.value)}
-                    style={{
-                      ...inputStyle,
-                      appearance: 'none',
-                      WebkitAppearance: 'none',
-                      cursor: 'pointer',
-                      color: tariffId ? '#282828' : '#999',
-                    }}
+                    className={`calc-input calc-input--select ${tariffId ? '' : 'calc-input--placeholder'}`}
                   >
                     <option value=''>Выберите тариф</option>
                     {tariffs.map((t) => (
@@ -379,80 +343,54 @@ export default function Calculator() {
                       </option>
                     ))}
                   </select>
-                  <span style={arrowStyle}>›</span>
+                  <span className='calc-arrow'>›</span>
                 </div>
               </div>
 
               <div>
-                <label style={labelStyle}>Дата и время</label>
-                <div style={{ position: 'relative' }}>
+                <label className='calc-label'>Дата и время</label>
+                <div className='calc-input-wrap'>
                   <input
                     type='datetime-local'
                     value={datetime}
                     onChange={(e) => setDatetime(e.target.value)}
-                    style={{ ...inputStyle, cursor: 'pointer', colorScheme: 'light' }}
+                    className='calc-input'
+                    style={{ cursor: 'pointer', colorScheme: 'light' }}
                   />
                 </div>
               </div>
             </div>
 
-            <label
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '16px',
-                cursor: 'pointer',
-                marginBottom: '40px',
-                userSelect: 'none',
-              }}
-            >
+            <label className='calc-checkbox-row'>
               <div
+                role='checkbox'
+                aria-checked={needDocs}
+                tabIndex={0}
                 onClick={() => setNeedDocs((v) => !v)}
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  border: '2px solid #282828',
-                  borderRadius: '8px',
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: needDocs ? '#282828' : '#fff',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setNeedDocs((v) => !v)
+                  }
                 }}
+                className={`calc-checkbox ${needDocs ? 'calc-checkbox--checked' : ''}`}
               >
-                {needDocs && (
-                  <span style={{ color: '#FEDA00', fontSize: '26px', fontWeight: '800', lineHeight: 1 }}>
-                    ✓
-                  </span>
-                )}
+                {needDocs && <span className='calc-checkbox-mark'>✓</span>}
               </div>
-              <span style={{ fontSize: '20px', fontWeight: '700', color: '#282828' }}>
+              <span className='calc-checkbox-text'>
                 Отчетные документы (+10% к стоимости)
               </span>
             </label>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '52px' }}>
-              <div
-                style={{
-                  width: '630px',
-                  border: '2px solid #FEDA00',
-                  borderRadius: '20px',
-                  padding: '32px 40px',
-                  background: '#fff',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}
-              >
-                <p style={{ fontSize: '20px', fontWeight: '800', color: '#282828' }}>
+            <div className='calc-summary-wrap'>
+              <div className='calc-summary'>
+                <p className='calc-summary-line'>
                   Расстояние (прим.): {distanceText}
                 </p>
-                <p style={{ fontSize: '20px', fontWeight: '800', color: '#282828' }}>
+                <p className='calc-summary-line'>
                   Стоимость (прим.): {costText}
                 </p>
-                <p style={{ fontSize: '13px', color: '#888', lineHeight: '1.5', marginTop: '4px' }}>
+                <p className='calc-summary-note'>
                   Расстояние и стоимость являются приблизительными. Итоговая сумма может
                   измениться из-за перекрытия или закрытия дорог, дорожных ситуаций, изменения
                   маршрута по запросу клиента, а также иных обстоятельств в пути.
@@ -461,58 +399,18 @@ export default function Calculator() {
               </div>
             </div>
 
-            <div style={{ marginBottom: '52px' }}>
+            <div className='calc-map-wrap'>
               {mapsReady ? (
-                <div
-                  ref={mapRef}
-                  style={{
-                    width: '680px',
-                    height: '400px',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    margin: '0 auto',
-                  }}
-                />
+                <div ref={mapRef} className='calc-map' />
               ) : (
-                <div
-                  style={{
-                    width: '680px',
-                    height: '400px',
-                    borderRadius: '12px',
-                    background: '#f5f5f5',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto',
-                    border: '1px solid #e8e8e8',
-                    flexDirection: 'column',
-                    gap: '8px',
-                  }}
-                >
-                  <p style={{ color: '#aaa', fontSize: '16px' }}>Загрузка карты...</p>
+                <div className='calc-map-placeholder'>
+                  <p>Загрузка карты...</p>
                 </div>
               )}
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <button
-                onClick={() => setShowModal(true)}
-                style={{
-                  width: '400px',
-                  height: '85px',
-                  borderRadius: '20px',
-                  fontSize: '22px',
-                  fontWeight: '800',
-                  fontFamily: 'inherit',
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: '#282828',
-                  color: '#FEDA00',
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
+            <div className='calc-submit-wrap'>
+              <button type='button' onClick={() => setShowModal(true)} className='calc-submit'>
                 Заказать
               </button>
             </div>

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Tariff, Car, PopularRoute, RoutePrice
+from .models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
 
 
 class CarInline(admin.TabularInline):
@@ -11,8 +11,8 @@ class CarInline(admin.TabularInline):
 
 @admin.register(Tariff)
 class TariffAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'price_per_km', 'cars_count', 'is_active', 'sort_order')
-    list_editable = ('price_per_km', 'is_active', 'sort_order')
+    list_display = ('name', 'slug', 'price_per_km', 'new_territory_price_per_km', 'cars_count', 'is_active', 'sort_order')
+    list_editable = ('price_per_km', 'new_territory_price_per_km', 'is_active', 'sort_order')
     prepopulated_fields = {'slug': ('name',)}
     inlines = [CarInline]
 
@@ -43,11 +43,18 @@ class RoutePriceInline(admin.TabularInline):
 
 @admin.register(PopularRoute)
 class PopularRouteAdmin(admin.ModelAdmin):
-    list_display = ('from_city', 'to_city', 'prices_summary', 'is_active', 'sort_order')
-    list_editable = ('is_active', 'sort_order')
+    list_display = ('from_city', 'to_city', 'is_new_territory', 'prices_summary', 'is_active', 'sort_order')
+    list_editable = ('is_new_territory', 'is_active', 'sort_order')
     inlines = [RoutePriceInline]
 
     @admin.display(description='Цены')
     def prices_summary(self, obj):
         parts = [f'{p.tariff.name}: {p.price}₽' for p in obj.prices.select_related('tariff')]
         return ', '.join(parts) if parts else '—'
+
+
+@admin.register(NewTerritoryCity)
+class NewTerritoryCityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'is_active')
+    list_editable = ('is_active',)
+    search_fields = ('name',)
