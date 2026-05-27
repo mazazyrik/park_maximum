@@ -11,8 +11,6 @@ import toyotaCamry from '../../assets/images/toyota-camry.webp'
 import kiaOptima from '../../assets/images/kia-optima.webp'
 import belgeeX70 from '../../assets/images/belgee-x70.webp'
 import cheryArrizo8 from '../../assets/images/chery-arrizo8.webp'
-import mercedesE from '../../assets/images/mercedes-e.webp'
-import bmw5 from '../../assets/images/bmw-5.webp'
 import mercedesVito from '../../assets/images/mercedes-vito.webp'
 import mercedesSprinter from '../../assets/images/mercedes-sprinter.webp'
 
@@ -27,8 +25,6 @@ const LOCAL_IMAGES = {
   'Kia Optima': kiaOptima,
   'Belgee X70': belgeeX70,
   'Chery Arrizo 8': cheryArrizo8,
-  'Mercedes E-Class': mercedesE,
-  'BMW 5 Series': bmw5,
   'Mercedes Vito': mercedesVito,
   'Mercedes Sprinter': mercedesSprinter,
 }
@@ -66,16 +62,6 @@ const FALLBACK_TARIFFS = [
       { name: 'Kia Optima', image: kiaOptima },
       { name: 'Chery Arrizo 8', image: cheryArrizo8 },
       { name: 'Belgee X70', image: belgeeX70 },
-    ],
-  },
-  {
-    id: 'compact_van',
-    label: 'Компактвэн',
-    price: '50 руб/км',
-    extra: '+5 руб/км',
-    cars: [
-      { name: 'Mercedes E-Class', image: mercedesE },
-      { name: 'BMW 5 Series', image: bmw5 },
     ],
   },
   {

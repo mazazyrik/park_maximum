@@ -50,22 +50,11 @@ TARIFFS_DATA = [
         ],
     },
     {
-        'name': 'Компактвэн',
-        'slug': 'compact_van',
-        'price_per_km': 50,
-        'new_territory_price_per_km': 100,
-        'sort_order': 4,
-        'cars': [
-            {'name': 'Mercedes E-Class', 'extra_price_per_km': 5, 'sort_order': 1},
-            {'name': 'BMW 5 Series', 'extra_price_per_km': 5, 'sort_order': 2},
-        ],
-    },
-    {
         'name': 'Минивен',
         'slug': 'minivan',
         'price_per_km': 50,
         'new_territory_price_per_km': 150,
-        'sort_order': 5,
+        'sort_order': 4,
         'cars': [
             {'name': 'Mercedes Vito', 'extra_price_per_km': 5, 'sort_order': 1},
         ],
@@ -75,7 +64,7 @@ TARIFFS_DATA = [
         'slug': 'minivan8',
         'price_per_km': 70,
         'new_territory_price_per_km': 150,
-        'sort_order': 6,
+        'sort_order': 5,
         'cars': [
             {'name': 'Mercedes Sprinter', 'extra_price_per_km': 5, 'sort_order': 1},
         ],
@@ -155,6 +144,7 @@ class Command(BaseCommand):
         tariff_map = self._seed_tariffs()
         self._seed_routes(tariff_map)
         self._seed_new_territory_cities()
+        self._cleanup_orphan_tariffs()
 
         self.stdout.write(self.style.SUCCESS('Готово!'))
 
@@ -236,3 +226,9 @@ class Command(BaseCommand):
                 defaults={'is_active': True},
             )
         self.stdout.write(f'Города новых территорий: {len(NEW_TERRITORY_CITIES)}')
+
+    def _cleanup_orphan_tariffs(self):
+        valid_slugs = [t['slug'] for t in TARIFFS_DATA]
+        deleted, _ = Tariff.objects.exclude(slug__in=valid_slugs).delete()
+        if deleted:
+            self.stdout.write(f'Удалены лишние тарифы: {deleted}')

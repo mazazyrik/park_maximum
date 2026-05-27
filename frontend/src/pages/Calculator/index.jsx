@@ -11,7 +11,6 @@ const FALLBACK_TARIFFS = [
   { id: 'standard', slug: 'standard', label: 'Стандарт', price: 30 },
   { id: 'comfort', slug: 'comfort', label: 'Комфорт', price: 35 },
   { id: 'comfort_plus', slug: 'comfort_plus', label: 'Комфорт +', price: 40 },
-  { id: 'compact_van', slug: 'compact_van', label: 'Компактвэн', price: 50 },
   { id: 'minivan', slug: 'minivan', label: 'Минивен', price: 50 },
   { id: 'minivan8', slug: 'minivan8', label: 'Минивен 8+', price: 70 },
 ]

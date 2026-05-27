@@ -18,9 +18,9 @@ const CITY_IMAGES = {
 }
 
 const PRICE_ROWS = [
-  { left: 'standard', right: 'compact_van' },
-  { left: 'comfort', right: 'minivan' },
-  { left: 'comfort_plus', right: 'minivan8' },
+  { left: 'standard', right: 'minivan' },
+  { left: 'comfort', right: 'minivan8' },
+  { left: 'comfort_plus', right: null },
 ]
 
 function formatPrice(price) {

@@ -9,9 +9,9 @@ def remove_business_tariff(apps, schema_editor):
     if not business:
         return
 
-    compact_van = Tariff.objects.filter(slug='compact_van').first()
-    if compact_van:
-        Order.objects.filter(tariff=business).update(tariff=compact_van)
+    comfort_plus = Tariff.objects.filter(slug='comfort_plus').first()
+    if comfort_plus:
+        Order.objects.filter(tariff=business).update(tariff=comfort_plus)
     else:
         Order.objects.filter(tariff=business).update(tariff=None)
 

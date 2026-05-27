@@ -46,8 +46,6 @@ convert_file "$DIR/toyota-camry.jpg" 1216 82
 convert_file "$DIR/kia-optima.jpg" 1216 82
 convert_file "$DIR/belgee-x70.jpg" 1216 82
 convert_file "$DIR/chery-arrizo8.jpg" 1216 82
-convert_file "$DIR/mercedes-e.jpg" 1216 82
-convert_file "$DIR/bmw-5.jpg" 1216 82
 convert_file "$DIR/mercedes-vito.jpg" 1216 82
 convert_file "$DIR/mercedes-sprinter.jpg" 1216 82
 
