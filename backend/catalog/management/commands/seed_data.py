@@ -1,15 +1,41 @@
 from decimal import Decimal
 
+from decouple import config
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
 from catalog.models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
 
 
-ADMIN_EMAIL = 'filippov.m.n@mail.ru'
-ADMIN_PASSWORD = 'admin1234'
+STATIC_CDN_BASE = config(
+    'STATIC_CDN_BASE',
+    default='https://cdn.jsdelivr.net/gh/mazazyrik/park_maximum@main/frontend/src/assets/images',
+)
+
+CAR_PHOTO_FILES = {
+    'Hyundai Solaris': 'car-solaris.webp',
+    'Kia Rio': 'kia-rio.webp',
+    'Skoda Rapid': 'skoda-rapid.webp',
+    'Hyundai Elantra': 'hyundai-elantra.webp',
+    'Belgee X50': 'belgee-x50.webp',
+    'Chery Tiggo': 'chery-tiggo.webp',
+    'Toyota Camry': 'toyota-camry.webp',
+    'Kia Optima': 'kia-optima.webp',
+    'Belgee X70': 'belgee-x70.webp',
+    'Chery Arrizo 8': 'chery-arrizo8.webp',
+    'Mercedes Vito': 'mercedes-vito.webp',
+    'Mercedes Sprinter': 'mercedes-sprinter.webp',
+}
 
 NEW_TERRITORY_CITIES = ['Луганск', 'Донецк']
+
+
+def car_photo_url(name):
+    file_name = CAR_PHOTO_FILES.get(name)
+    if not file_name:
+        return ''
+    return f'{STATIC_CDN_BASE}/{file_name}'
+
 
 TARIFFS_DATA = [
     {
@@ -149,25 +175,33 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Готово!'))
 
     def _seed_admin(self):
+        username = config('DJANGO_SUPERUSER_USERNAME', default='admin')
+        email = config('DJANGO_SUPERUSER_EMAIL', default='admin@parkmaximum.ru')
+        password = config('DJANGO_SUPERUSER_PASSWORD', default='')
+
+        if not password:
+            self.stdout.write(self.style.WARNING('DJANGO_SUPERUSER_PASSWORD не задан, админ не обновлён'))
+            return
+
         User = get_user_model()
         user, created = User.objects.get_or_create(
-            username=ADMIN_EMAIL,
+            username=username,
             defaults={
-                'email': ADMIN_EMAIL,
+                'email': email,
                 'is_staff': True,
                 'is_superuser': True,
             },
         )
-        user.email = ADMIN_EMAIL
+        user.email = email
         user.is_staff = True
         user.is_superuser = True
-        user.set_password(ADMIN_PASSWORD)
+        user.set_password(password)
         user.save()
 
         if created:
-            self.stdout.write(f'Админ создан: {ADMIN_EMAIL}')
+            self.stdout.write(f'Админ создан: {username}')
         else:
-            self.stdout.write(f'Админ обновлён: {ADMIN_EMAIL}')
+            self.stdout.write(f'Админ обновлён: {username}')
 
     def _seed_tariffs(self):
         tariff_map = {}
@@ -184,7 +218,10 @@ class Command(BaseCommand):
                 Car.objects.update_or_create(
                     tariff=tariff,
                     name=car_data['name'],
-                    defaults=car_data,
+                    defaults={
+                        **car_data,
+                        'external_photo_url': car_photo_url(car_data['name']),
+                    },
                 )
 
             t_data['cars'] = cars_data
