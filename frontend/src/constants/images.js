@@ -23,8 +23,6 @@ export const IMAGES = {
   cheryArrizo8: staticImage('chery-arrizo8.webp'),
   mercedesVito: staticImage('mercedes-vito.webp'),
   mercedesSprinter: staticImage('mercedes-sprinter.webp'),
-  cityLugansk: staticImage('city-lugansk.webp'),
-  cityDonetsk: staticImage('city-donetsk.webp'),
   cityRostov: staticImage('city-rostov.webp'),
   cityKrasnodar: staticImage('city-krasnodar.webp'),
   citySpb: staticImage('city-spb.webp'),
@@ -47,8 +45,6 @@ export const CAR_IMAGES = {
 }
 
 export const CITY_IMAGES = {
-  'Луганск': IMAGES.cityLugansk,
-  'Донецк': IMAGES.cityDonetsk,
   'Ростов': IMAGES.cityRostov,
   'Краснодарский край': IMAGES.cityKrasnodar,
   'Санкт-Петербург': IMAGES.citySpb,

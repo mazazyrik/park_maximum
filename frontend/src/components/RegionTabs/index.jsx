@@ -1,19 +1,30 @@
-import { useState } from 'react'
-
 const tabs = [
   { id: 'cfo', label: 'ЦФО', bg: '#282828', color: '#fff' },
   { id: 'south', label: 'Юг-России', bg: '#FEDA00', color: '#282828' },
   { id: 'new', label: 'Новые регионы', bg: '#F3F3F3', color: '#282828' },
 ]
 
-export default function RegionTabs({ activeTab, onTabChange }) {
+export default function RegionTabs({ activeTab, onTabChange, onRegionModalClick }) {
+  function handleClick(tabId) {
+    if (tabId === 'cfo' || tabId === 'south') {
+      onTabChange(tabId)
+      onRegionModalClick?.(tabId)
+      return
+    }
+    if (tabId === 'new') {
+      onRegionModalClick?.('new')
+      return
+    }
+    onTabChange(tabId)
+  }
+
   return (
     <section className='region-tabs'>
       {tabs.map((tab) => (
         <button
           key={tab.id}
           type='button'
-          onClick={() => onTabChange(tab.id)}
+          onClick={() => handleClick(tab.id)}
           className='region-tab'
           style={{
             backgroundColor: tab.bg,

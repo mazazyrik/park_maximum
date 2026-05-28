@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
+from .models import Tariff, Car, PopularRoute, NewTerritoryRoute
 
 
 class CarInline(admin.TabularInline):
@@ -11,9 +11,13 @@ class CarInline(admin.TabularInline):
 
 @admin.register(Tariff)
 class TariffAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'price_per_km', 'new_territory_price_per_km', 'cars_count', 'is_active', 'sort_order')
-    list_editable = ('price_per_km', 'new_territory_price_per_km', 'is_active', 'sort_order')
+    list_display = ('name', 'slug', 'price_per_km', 'cars_count', 'is_active', 'sort_order')
+    list_editable = ('price_per_km', 'is_active', 'sort_order')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'slug')
+    ordering = ('sort_order', 'name')
     prepopulated_fields = {'slug': ('name',)}
+    fields = ('name', 'slug', 'price_per_km', 'is_active', 'sort_order')
     inlines = [CarInline]
 
     @admin.display(description='Автомобилей')
@@ -23,10 +27,12 @@ class TariffAdmin(admin.ModelAdmin):
 
 @admin.register(Car)
 class CarAdmin(admin.ModelAdmin):
-    list_display = ('name', 'tariff', 'extra_price_per_km', 'preview', 'is_active', 'sort_order')
+    list_display = ('pk', 'name', 'tariff', 'extra_price_per_km', 'preview', 'is_active', 'sort_order')
+    list_editable = ('name', 'tariff', 'extra_price_per_km', 'is_active', 'sort_order')
     list_filter = ('tariff', 'is_active')
-    list_editable = ('extra_price_per_km', 'is_active', 'sort_order')
-    search_fields = ('name',)
+    search_fields = ('name', 'tariff__name')
+    ordering = ('tariff__sort_order', 'sort_order', 'name')
+    fields = ('tariff', 'name', 'photo', 'external_photo_url', 'extra_price_per_km', 'is_active', 'sort_order')
 
     @admin.display(description='Фото')
     def preview(self, obj):
@@ -36,26 +42,21 @@ class CarAdmin(admin.ModelAdmin):
         return '—'
 
 
-class RoutePriceInline(admin.TabularInline):
-    model = RoutePrice
-    extra = 0
-    fields = ('tariff', 'price')
-
-
 @admin.register(PopularRoute)
 class PopularRouteAdmin(admin.ModelAdmin):
-    list_display = ('from_city', 'to_city', 'is_new_territory', 'prices_summary', 'is_active', 'sort_order')
-    list_editable = ('is_new_territory', 'is_active', 'sort_order')
-    inlines = [RoutePriceInline]
-
-    @admin.display(description='Цены')
-    def prices_summary(self, obj):
-        parts = [f'{p.tariff.name}: {p.price}₽' for p in obj.prices.select_related('tariff')]
-        return ', '.join(parts) if parts else '—'
+    list_display = ('pk', 'from_city', 'to_city', 'is_active', 'sort_order')
+    list_editable = ('from_city', 'to_city', 'is_active', 'sort_order')
+    list_filter = ('is_active',)
+    search_fields = ('from_city', 'to_city')
+    ordering = ('sort_order', 'from_city', 'to_city')
+    fields = ('from_city', 'to_city', 'is_active', 'sort_order')
 
 
-@admin.register(NewTerritoryCity)
-class NewTerritoryCityAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_active')
-    list_editable = ('is_active',)
-    search_fields = ('name',)
+@admin.register(NewTerritoryRoute)
+class NewTerritoryRouteAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'from_city', 'to_city', 'from_price', 'is_active', 'sort_order')
+    list_editable = ('from_city', 'to_city', 'from_price', 'is_active', 'sort_order')
+    list_filter = ('is_active',)
+    search_fields = ('from_city', 'to_city')
+    ordering = ('sort_order', 'from_city', 'to_city')
+    fields = ('from_city', 'to_city', 'from_price', 'is_active', 'sort_order')

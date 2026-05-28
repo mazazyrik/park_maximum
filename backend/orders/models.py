@@ -35,7 +35,7 @@ class Order(models.Model):
         null=True,
         blank=True,
     )
-    trip_datetime = models.DateTimeField('Дата и время поездки')
+    trip_datetime = models.DateTimeField('Дата и время поездки', null=True, blank=True)
     need_docs = models.BooleanField('Отчётные документы', default=False)
     distance_km = models.PositiveIntegerField('Расстояние (км)', default=0)
     estimated_cost = models.DecimalField('Примерная стоимость (руб)', max_digits=10, decimal_places=2, default=0)

@@ -69,7 +69,7 @@ export_xlsx.short_description = 'Выгрузить в XLSX'
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'fio', 'phone', 'from_address_short', 'to_address_short',
-        'tariff', 'trip_datetime', 'need_docs', 'distance_km',
+        'tariff', 'car', 'trip_datetime', 'need_docs', 'distance_km',
         'estimated_cost', 'status_badge', 'created_at',
     )
     list_filter = (

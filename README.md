@@ -94,12 +94,13 @@ park_maximum/
 │   └── vite.config.js      # dev proxy → :8000
 │
 ├── backend/                # Django project
-│   ├── catalog/            # Tariff, Car, PopularRoute, RoutePrice
+│   ├── catalog/            # Tariff, Car, PopularRoute, NewTerritoryRoute
 │   ├── orders/             # Order, signals (Telegram)
 │   ├── config/             # settings, urls
 │   ├── Dockerfile
 │   ├── entrypoint.sh       # migrate → seed → collectstatic → gunicorn
-│   └── requirements.txt
+│   ├── pyproject.toml
+│   └── poetry.lock
 │
 ├── nginx/
 │   ├── Dockerfile          # multi-stage: build frontend + nginx
@@ -197,11 +198,7 @@ Admin: http://127.0.0.1:8000/admin/
 
 По умолчанию используется SQLite (`backend/.env.example`).
 
-Обновить `requirements.txt` после изменения зависимостей Poetry:
-
-```bash
-poetry export -f requirements.txt --without-hashes -o requirements.txt
-```
+Зависимости backend управляются через Poetry (`backend/pyproject.toml`, `backend/poetry.lock`).
 
 ### Frontend
 

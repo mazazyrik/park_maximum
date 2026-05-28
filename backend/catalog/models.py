@@ -5,13 +5,6 @@ class Tariff(models.Model):
     name = models.CharField('Название', max_length=100)
     slug = models.SlugField('Slug', unique=True)
     price_per_km = models.DecimalField('Цена за км (руб)', max_digits=8, decimal_places=2)
-    new_territory_price_per_km = models.DecimalField(
-        'Цена за км — новые территории (руб)',
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-    )
     is_active = models.BooleanField('Активен', default=True)
     sort_order = models.PositiveIntegerField('Порядок', default=0)
 
@@ -60,7 +53,6 @@ class Car(models.Model):
 class PopularRoute(models.Model):
     from_city = models.CharField('Откуда', max_length=100)
     to_city = models.CharField('Куда', max_length=100)
-    is_new_territory = models.BooleanField('Новая территория', default=False)
     is_active = models.BooleanField('Активен', default=True)
     sort_order = models.PositiveIntegerField('Порядок', default=0)
 
@@ -73,38 +65,17 @@ class PopularRoute(models.Model):
         return f'{self.from_city} → {self.to_city}'
 
 
-class RoutePrice(models.Model):
-    route = models.ForeignKey(
-        PopularRoute,
-        on_delete=models.CASCADE,
-        related_name='prices',
-        verbose_name='Маршрут',
-    )
-    tariff = models.ForeignKey(
-        Tariff,
-        on_delete=models.CASCADE,
-        related_name='route_prices',
-        verbose_name='Тариф',
-    )
-    price = models.DecimalField('Цена (руб)', max_digits=10, decimal_places=2)
-
-    class Meta:
-        unique_together = ['route', 'tariff']
-        verbose_name = 'Цена маршрута'
-        verbose_name_plural = 'Цены маршрутов'
-
-    def __str__(self):
-        return f'{self.route} — {self.tariff.name}: {self.price} руб'
-
-
-class NewTerritoryCity(models.Model):
-    name = models.CharField('Город', max_length=100, unique=True)
+class NewTerritoryRoute(models.Model):
+    from_city = models.CharField('Откуда', max_length=100, default='Москва')
+    to_city = models.CharField('Куда', max_length=100)
+    from_price = models.DecimalField('Цена от (руб)', max_digits=10, decimal_places=2)
     is_active = models.BooleanField('Активен', default=True)
+    sort_order = models.PositiveIntegerField('Порядок', default=0)
 
     class Meta:
-        ordering = ['name']
-        verbose_name = 'Город новой территории'
-        verbose_name_plural = 'Города новых территорий'
+        ordering = ['sort_order']
+        verbose_name = 'Маршрут новой территории'
+        verbose_name_plural = 'Новые территории'
 
     def __str__(self):
-        return self.name
+        return f'{self.from_city} → {self.to_city} от {self.from_price} р.'

@@ -40,7 +40,7 @@ def notify_new_order(sender, instance, created, **kwargs):
         f'💰 <b>Стоимость:</b> {instance.estimated_cost} руб\n'
         f'🏷 <b>Тариф:</b> {instance.tariff.name if instance.tariff else "—"}'
         f'{car_line}\n'
-        f'🗓 <b>Дата поездки:</b> {instance.trip_datetime.strftime("%d.%m.%Y %H:%M")}\n'
+        f'🗓 <b>Дата поездки:</b> {instance.trip_datetime.strftime("%d.%m.%Y %H:%M") if instance.trip_datetime else "—"}\n'
         f'📄 <b>Отч. документы:</b> {docs}'
     )
     _send_telegram(text)

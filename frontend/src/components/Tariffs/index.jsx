@@ -80,6 +80,7 @@ export default function Tariffs() {
   const [activeTabIdx, setActiveTabIdx] = useState(0)
   const [carIdx, setCarIdx] = useState(0)
   const tabRefs = useRef({})
+  const skipTabScroll = useRef(true)
 
   useEffect(() => {
     fetchTariffs()
@@ -90,6 +91,10 @@ export default function Tariffs() {
   }, [])
 
   useEffect(() => {
+    if (skipTabScroll.current) {
+      skipTabScroll.current = false
+      return
+    }
     const tabEl = tabRefs.current[activeTabIdx]
     if (tabEl) {
       tabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
