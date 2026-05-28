@@ -4,6 +4,7 @@ import Footer from '../../components/Footer'
 import OrderModal from './OrderModal'
 import { fetchTariffs, fetchPricingConfig } from '../../api'
 import { isNewTerritoryRoute, mapTariffsForCalculator } from '../../utils/pricing'
+import { loadYandexMaps } from '../../utils/yandexMaps'
 
 const GEOCODER_KEY = 'ae36e2e8-3202-4ead-8128-cca559d477a5'
 
@@ -157,18 +158,10 @@ export default function Calculator() {
 
   const tariffs = useMemo(() => {
     if (rawTariffs.length > 0) {
-      return mapTariffsForCalculator(
-        rawTariffs,
-        isNewTerritory,
-        pricingConfig.minivan_slugs,
-      )
+      return mapTariffsForCalculator(rawTariffs)
     }
-    if (!isNewTerritory) return FALLBACK_TARIFFS
-    return FALLBACK_TARIFFS.map((t) => ({
-      ...t,
-      price: pricingConfig.minivan_slugs.includes(t.slug) ? 150 : 100,
-    }))
-  }, [rawTariffs, isNewTerritory, pricingConfig.minivan_slugs])
+    return FALLBACK_TARIFFS
+  }, [rawTariffs])
 
   useEffect(() => {
     Promise.all([fetchTariffs(), fetchPricingConfig()])
@@ -180,17 +173,24 @@ export default function Calculator() {
   }, [])
 
   useEffect(() => {
-    let attempts = 0
-    const check = () => {
-      if (window.ymaps) {
-        window.ymaps.ready(() => setMapsReady(true))
-      } else if (attempts < 20) {
-        attempts++
-        setTimeout(check, 400)
-      }
+    if (!isNewTerritory) return
+    setTariffId('')
+    setDistance(null)
+    setCost(null)
+    setNeedDocs(false)
+    setDatetime('')
+    if (mapInstance.current) {
+      mapInstance.current.geoObjects.removeAll()
     }
-    check()
-  }, [])
+  }, [isNewTerritory])
+
+  useEffect(() => {
+    if (isNewTerritory) return undefined
+    loadYandexMaps()
+      .then(() => setMapsReady(true))
+      .catch(() => {})
+    return undefined
+  }, [isNewTerritory])
 
   useEffect(() => {
     if (!mapsReady || !mapRef.current || mapInitDone.current) return
@@ -241,8 +241,9 @@ export default function Calculator() {
   }
 
   useEffect(() => {
+    if (isNewTerritory) return undefined
     clearTimeout(routeTimer.current)
-    if (!fromCoords || !toCoords) return
+    if (!fromCoords || !toCoords) return undefined
 
     routeTimer.current = setTimeout(async () => {
       setIsRouting(true)
@@ -266,24 +267,34 @@ export default function Calculator() {
     }, 300)
 
     return () => clearTimeout(routeTimer.current)
-  }, [fromCoords, toCoords, mapsReady])
+  }, [fromCoords, toCoords, mapsReady, isNewTerritory])
 
   useEffect(() => {
+    if (isNewTerritory) {
+      setCost(null)
+      return
+    }
     if (distance === null || !tariffId) { setCost(null); return }
     const t = tariffs.find((x) => String(x.id) === tariffId)
     if (!t) return
     let price = distance * t.price
     if (needDocs) price = Math.round(price * 1.1)
     setCost(Math.round(price))
-  }, [distance, tariffId, needDocs, tariffs])
+  }, [distance, tariffId, needDocs, tariffs, isNewTerritory])
 
-  const distanceText = isRouting
+  const distanceText = isNewTerritory
+    ? '—'
+    : isRouting
     ? 'вычисляется...'
     : distance !== null
     ? `${distance} км`
     : '—'
 
-  const costText = cost !== null ? `${cost.toLocaleString('ru-RU')} руб` : '—'
+  const costText = isNewTerritory
+    ? '—'
+    : cost !== null
+    ? `${cost.toLocaleString('ru-RU')} руб`
+    : '—'
 
   const selectedTariff = tariffs.find((t) => String(t.id) === tariffId)
 
@@ -297,7 +308,7 @@ export default function Calculator() {
 
             {isNewTerritory && (
               <p className='calc-territory-note'>
-                Маршрут затрагивает новые территории — применён тариф новых территорий
+                Маршрут затрагивает новые территории — расчёт недоступен. Оператор перезвонит и уточнит детали.
               </p>
             )}
 
@@ -326,59 +337,63 @@ export default function Calculator() {
               />
             </div>
 
-            <div className='calc-grid'>
-              <div>
-                <label className='calc-label'>Тариф</label>
-                <div className='calc-input-wrap'>
-                  <select
-                    value={tariffId}
-                    onChange={(e) => setTariffId(e.target.value)}
-                    className={`calc-input calc-input--select ${tariffId ? '' : 'calc-input--placeholder'}`}
+            {!isNewTerritory && (
+              <>
+                <div className='calc-grid'>
+                  <div>
+                    <label className='calc-label'>Тариф</label>
+                    <div className='calc-input-wrap'>
+                      <select
+                        value={tariffId}
+                        onChange={(e) => setTariffId(e.target.value)}
+                        className={`calc-input calc-input--select ${tariffId ? '' : 'calc-input--placeholder'}`}
+                      >
+                        <option value=''>Выберите тариф</option>
+                        {tariffs.map((t) => (
+                          <option key={t.id} value={String(t.id)}>
+                            {t.label} — {t.price} руб/км
+                          </option>
+                        ))}
+                      </select>
+                      <span className='calc-arrow'>›</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className='calc-label'>Дата и время</label>
+                    <div className='calc-input-wrap'>
+                      <input
+                        type='datetime-local'
+                        value={datetime}
+                        onChange={(e) => setDatetime(e.target.value)}
+                        className='calc-input calc-input--datetime'
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <label className='calc-checkbox-row'>
+                  <div
+                    role='checkbox'
+                    aria-checked={needDocs}
+                    tabIndex={0}
+                    onClick={() => setNeedDocs((v) => !v)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        setNeedDocs((v) => !v)
+                      }
+                    }}
+                    className={`calc-checkbox ${needDocs ? 'calc-checkbox--checked' : ''}`}
                   >
-                    <option value=''>Выберите тариф</option>
-                    {tariffs.map((t) => (
-                      <option key={t.id} value={String(t.id)}>
-                        {t.label} — {t.price} руб/км
-                      </option>
-                    ))}
-                  </select>
-                  <span className='calc-arrow'>›</span>
-                </div>
-              </div>
-
-              <div>
-                <label className='calc-label'>Дата и время</label>
-                <div className='calc-input-wrap'>
-                  <input
-                    type='datetime-local'
-                    value={datetime}
-                    onChange={(e) => setDatetime(e.target.value)}
-                    className='calc-input calc-input--datetime'
-                  />
-                </div>
-              </div>
-            </div>
-
-            <label className='calc-checkbox-row'>
-              <div
-                role='checkbox'
-                aria-checked={needDocs}
-                tabIndex={0}
-                onClick={() => setNeedDocs((v) => !v)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    setNeedDocs((v) => !v)
-                  }
-                }}
-                className={`calc-checkbox ${needDocs ? 'calc-checkbox--checked' : ''}`}
-              >
-                {needDocs && <span className='calc-checkbox-mark'>✓</span>}
-              </div>
-              <span className='calc-checkbox-text'>
-                Отчетные документы (+10% к стоимости)
-              </span>
-            </label>
+                    {needDocs && <span className='calc-checkbox-mark'>✓</span>}
+                  </div>
+                  <span className='calc-checkbox-text'>
+                    Отчетные документы (+10% к стоимости)
+                  </span>
+                </label>
+              </>
+            )}
 
             <div className='calc-summary-wrap'>
               <div className='calc-summary'>
@@ -388,28 +403,41 @@ export default function Calculator() {
                 <p className='calc-summary-line'>
                   Стоимость (прим.): {costText}
                 </p>
-                <p className='calc-summary-note'>
-                  Расстояние и стоимость являются приблизительными. Итоговая сумма может
-                  измениться из-за перекрытия или закрытия дорог, дорожных ситуаций, изменения
-                  маршрута по запросу клиента, а также иных обстоятельств в пути.
-                  Точная стоимость согласовывается с оператором.
-                </p>
+                {!isNewTerritory && (
+                  <>
+                    <p className='calc-summary-note'>
+                      *расчёт действителен только по территории РФ.
+                    </p>
+                    <p className='calc-summary-note'>
+                      Расстояние и стоимость являются приблизительными. Итоговая сумма может
+                      измениться из-за перекрытия или закрытия дорог, дорожных ситуаций, изменения
+                      маршрута по запросу клиента, а также иных обстоятельств в пути.
+                      Точная стоимость согласовывается с оператором.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
-            <div className='calc-map-wrap'>
-              {mapsReady ? (
-                <div ref={mapRef} className='calc-map' />
-              ) : (
-                <div className='calc-map-placeholder'>
-                  <p>Загрузка карты...</p>
-                </div>
-              )}
-            </div>
+            {!isNewTerritory && (
+              <div className='calc-map-wrap'>
+                {mapsReady ? (
+                  <div ref={mapRef} className='calc-map' />
+                ) : (
+                  <div className='calc-map-placeholder'>
+                    <p>Загрузка карты...</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className='calc-submit-wrap'>
-              <button type='button' onClick={() => setShowModal(true)} className='calc-submit'>
-                Заказать
+              <button
+                type='button'
+                onClick={() => setShowModal(true)}
+                className='calc-submit'
+              >
+                {isNewTerritory ? 'Оставить заявку' : 'Заказать'}
               </button>
             </div>
           </div>
@@ -419,15 +447,28 @@ export default function Calculator() {
       {showModal && (
         <OrderModal
           onClose={() => setShowModal(false)}
-          orderData={{
-            from_address: from,
-            to_address: to,
-            tariff: selectedTariff?.id || null,
-            trip_datetime: datetime || null,
-            need_docs: needDocs,
-            distance_km: distance,
-            estimated_cost: cost ? String(cost) : null,
-          }}
+          orderData={
+            isNewTerritory
+              ? {
+                  from_address: from || 'Москва',
+                  to_address: to || 'Новые регионы, детали уточнить у клиента',
+                  tariff: null,
+                  trip_datetime: null,
+                  need_docs: false,
+                  distance_km: 0,
+                  estimated_cost: '0',
+                }
+              : {
+                  from_address: from,
+                  to_address: to,
+                  tariff: selectedTariff?.id || null,
+                  trip_datetime: datetime || null,
+                  need_docs: needDocs,
+                  distance_km: distance,
+                  estimated_cost: cost ? String(cost) : null,
+                }
+          }
+          shortRequest={isNewTerritory}
         />
       )}
     </>

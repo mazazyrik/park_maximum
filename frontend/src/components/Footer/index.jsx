@@ -22,9 +22,6 @@ export default function Footer() {
 
         <div className='site-footer-meta'>
           <span className='site-footer-line'>© Максимум</span>
-          <a href='/privacy' className='site-footer-policy'>
-            Политика конфиденциальности
-          </a>
         </div>
       </div>
     </footer>

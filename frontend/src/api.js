@@ -12,6 +12,12 @@ export async function fetchRoutes() {
   return res.json()
 }
 
+export async function fetchNewTerritories() {
+  const res = await fetch(`${BASE}/new-territories/`)
+  if (!res.ok) throw new Error('new territories fetch failed')
+  return res.json()
+}
+
 export async function fetchPricingConfig() {
   const res = await fetch(`${BASE}/pricing-config/`)
   if (!res.ok) throw new Error('pricing config fetch failed')

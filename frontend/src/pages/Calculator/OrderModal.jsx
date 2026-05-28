@@ -15,7 +15,7 @@ const inputStyle = {
   boxSizing: 'border-box',
 }
 
-export default function OrderModal({ onClose, orderData }) {
+export default function OrderModal({ onClose, orderData, shortRequest = false }) {
   const [fio, setFio] = useState('')
   const [phone, setPhone] = useState('')
   const [loading, setLoading] = useState(false)
@@ -114,11 +114,17 @@ export default function OrderModal({ onClose, orderData }) {
                 fontSize: '20px',
                 fontWeight: '800',
                 lineHeight: '1.4',
-                marginBottom: '36px',
+                marginBottom: shortRequest ? '16px' : '36px',
               }}
             >
-              Оператор свяжется с вами в ближайшее время
+              {shortRequest ? 'Оставить заявку' : 'Оператор свяжется с вами в ближайшее время'}
             </h2>
+
+            {shortRequest && (
+              <p style={{ color: '#ccc', fontSize: '15px', marginBottom: '28px', lineHeight: '1.5' }}>
+                Оператор перезвонит и уточнит детали поездки. Стоимость рассчитывается индивидуально.
+              </p>
+            )}
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: '20px' }}>
