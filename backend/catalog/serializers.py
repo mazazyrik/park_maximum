@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
+from .models import Tariff, Car, PopularRoute, NewTerritoryRoute
 
 
 class CarSerializer(serializers.ModelSerializer):
@@ -20,37 +20,30 @@ class CarSerializer(serializers.ModelSerializer):
 
 
 class TariffSerializer(serializers.ModelSerializer):
-    cars = CarSerializer(many=True, read_only=True, source='cars.filter')
+    cars = serializers.SerializerMethodField()
 
     class Meta:
         model = Tariff
-        fields = ('id', 'name', 'slug', 'price_per_km', 'new_territory_price_per_km', 'cars')
+        fields = ('id', 'name', 'slug', 'price_per_km', 'cars')
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['cars'] = CarSerializer(
-            instance.cars.filter(is_active=True),
+    def get_cars(self, obj):
+        return CarSerializer(
+            obj.cars.filter(is_active=True),
             many=True,
             context=self.context,
         ).data
-        return data
-
-
-class RoutePriceSerializer(serializers.ModelSerializer):
-    tariff_slug = serializers.CharField(source='tariff.slug', read_only=True)
-    tariff_name = serializers.CharField(source='tariff.name', read_only=True)
-
-    class Meta:
-        model = RoutePrice
-        fields = ('tariff_slug', 'tariff_name', 'price')
 
 
 class PopularRouteSerializer(serializers.ModelSerializer):
-    prices = RoutePriceSerializer(many=True, read_only=True)
-
     class Meta:
         model = PopularRoute
-        fields = ('id', 'from_city', 'to_city', 'is_new_territory', 'prices')
+        fields = ('id', 'from_city', 'to_city')
+
+
+class NewTerritoryRouteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewTerritoryRoute
+        fields = ('id', 'from_city', 'to_city', 'from_price')
 
 
 class PricingConfigSerializer(serializers.Serializer):

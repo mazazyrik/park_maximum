@@ -1,10 +1,8 @@
-from decimal import Decimal
-
 from decouple import config
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
-from catalog.models import Tariff, Car, PopularRoute, RoutePrice, NewTerritoryCity
+from catalog.models import Tariff, Car, PopularRoute, NewTerritoryRoute
 
 
 STATIC_CDN_BASE = config(
@@ -27,8 +25,6 @@ CAR_PHOTO_FILES = {
     'Mercedes Sprinter': 'mercedes-sprinter.webp',
 }
 
-NEW_TERRITORY_CITIES = ['Луганск', 'Донецк']
-
 
 def car_photo_url(name):
     file_name = CAR_PHOTO_FILES.get(name)
@@ -42,7 +38,6 @@ TARIFFS_DATA = [
         'name': 'Стандарт',
         'slug': 'standard',
         'price_per_km': 30,
-        'new_territory_price_per_km': 100,
         'sort_order': 1,
         'cars': [
             {'name': 'Hyundai Solaris', 'extra_price_per_km': 5, 'sort_order': 1},
@@ -54,7 +49,6 @@ TARIFFS_DATA = [
         'name': 'Комфорт',
         'slug': 'comfort',
         'price_per_km': 35,
-        'new_territory_price_per_km': 100,
         'sort_order': 2,
         'cars': [
             {'name': 'Hyundai Elantra', 'extra_price_per_km': 5, 'sort_order': 1},
@@ -66,7 +60,6 @@ TARIFFS_DATA = [
         'name': 'Комфорт +',
         'slug': 'comfort_plus',
         'price_per_km': 40,
-        'new_territory_price_per_km': 100,
         'sort_order': 3,
         'cars': [
             {'name': 'Toyota Camry', 'extra_price_per_km': 5, 'sort_order': 1},
@@ -79,7 +72,6 @@ TARIFFS_DATA = [
         'name': 'Минивен',
         'slug': 'minivan',
         'price_per_km': 50,
-        'new_territory_price_per_km': 150,
         'sort_order': 4,
         'cars': [
             {'name': 'Mercedes Vito', 'extra_price_per_km': 5, 'sort_order': 1},
@@ -89,7 +81,6 @@ TARIFFS_DATA = [
         'name': 'Минивен 8+',
         'slug': 'minivan8',
         'price_per_km': 70,
-        'new_territory_price_per_km': 150,
         'sort_order': 5,
         'cars': [
             {'name': 'Mercedes Sprinter', 'extra_price_per_km': 5, 'sort_order': 1},
@@ -97,60 +88,20 @@ TARIFFS_DATA = [
     },
 ]
 
-ROUTES_DATA = [
-    {
-        'from_city': 'Москва',
-        'to_city': 'Луганск',
-        'sort_order': 1,
-        'is_new_territory': True,
-        'distance_km': 1100,
-    },
-    {
-        'from_city': 'Москва',
-        'to_city': 'Донецк',
-        'sort_order': 2,
-        'is_new_territory': True,
-        'distance_km': 1070,
-    },
-    {
-        'from_city': 'Москва',
-        'to_city': 'Ростов',
-        'sort_order': 3,
-        'is_new_territory': False,
-        'distance_km': 1080,
-    },
-    {
-        'from_city': 'Москва',
-        'to_city': 'Краснодарский край',
-        'sort_order': 4,
-        'is_new_territory': False,
-        'distance_km': 1350,
-    },
-    {
-        'from_city': 'Москва',
-        'to_city': 'Санкт-Петербург',
-        'sort_order': 5,
-        'is_new_territory': False,
-        'distance_km': 710,
-    },
-    {
-        'from_city': 'Москва',
-        'to_city': 'Крым',
-        'sort_order': 6,
-        'is_new_territory': False,
-        'distance_km': 1550,
-    },
+POPULAR_ROUTES_DATA = [
+    {'from_city': 'Москва', 'to_city': 'Ростов', 'sort_order': 1},
+    {'from_city': 'Москва', 'to_city': 'Краснодарский край', 'sort_order': 2},
+    {'from_city': 'Москва', 'to_city': 'Санкт-Петербург', 'sort_order': 3},
+    {'from_city': 'Москва', 'to_city': 'Крым', 'sort_order': 4},
 ]
 
-
-def route_price(tariff, distance_km, is_new_territory):
-    if is_new_territory:
-        rate = tariff.new_territory_price_per_km
-        if rate is None:
-            rate = Decimal('150') if tariff.slug in ('minivan', 'minivan8') else Decimal('100')
-    else:
-        rate = tariff.price_per_km
-    return int(distance_km * rate)
+NEW_TERRITORY_ROUTES_DATA = [
+    {'from_city': 'Москва', 'to_city': 'Луганск', 'from_price': 42000, 'sort_order': 1},
+    {'from_city': 'Москва', 'to_city': 'Донецк', 'from_price': 50000, 'sort_order': 2},
+    {'from_city': 'Москва', 'to_city': 'Мелитополь', 'from_price': 60000, 'sort_order': 3},
+    {'from_city': 'Москва', 'to_city': 'Мариуполь', 'from_price': 48000, 'sort_order': 4},
+    {'from_city': 'Москва', 'to_city': 'Токмак', 'from_price': 68000, 'sort_order': 5},
+]
 
 
 class Command(BaseCommand):
@@ -163,13 +114,13 @@ class Command(BaseCommand):
         force = options['force']
 
         if force:
-            Tariff.objects.all().delete()
             PopularRoute.objects.all().delete()
+            NewTerritoryRoute.objects.all().delete()
 
         self._seed_admin()
         tariff_map = self._seed_tariffs()
-        self._seed_routes(tariff_map)
-        self._seed_new_territory_cities()
+        self._seed_popular_routes()
+        self._seed_new_territory_routes()
         self._cleanup_orphan_tariffs()
 
         self.stdout.write(self.style.SUCCESS('Готово!'))
@@ -207,10 +158,14 @@ class Command(BaseCommand):
         tariff_map = {}
 
         for t_data in TARIFFS_DATA:
-            cars_data = t_data.pop('cars')
+            cars_data = t_data['cars']
             tariff, _ = Tariff.objects.update_or_create(
                 slug=t_data['slug'],
-                defaults=t_data,
+                defaults={
+                    'name': t_data['name'],
+                    'price_per_km': t_data['price_per_km'],
+                    'sort_order': t_data['sort_order'],
+                },
             )
             tariff_map[tariff.slug] = tariff
 
@@ -224,45 +179,33 @@ class Command(BaseCommand):
                     },
                 )
 
-            t_data['cars'] = cars_data
-
         self.stdout.write(f'Тарифы: {len(tariff_map)}')
         return tariff_map
 
-    def _seed_routes(self, tariff_map):
-        for r_data in ROUTES_DATA:
-            distance_km = r_data.pop('distance_km')
-            is_new_territory = r_data.pop('is_new_territory')
-
-            route, _ = PopularRoute.objects.update_or_create(
+    def _seed_popular_routes(self):
+        for r_data in POPULAR_ROUTES_DATA:
+            PopularRoute.objects.update_or_create(
                 from_city=r_data['from_city'],
                 to_city=r_data['to_city'],
-                defaults={
-                    **r_data,
-                    'is_new_territory': is_new_territory,
-                },
+                defaults=r_data,
             )
 
-            for tariff in tariff_map.values():
-                price = route_price(tariff, distance_km, is_new_territory)
-                RoutePrice.objects.update_or_create(
-                    route=route,
-                    tariff=tariff,
-                    defaults={'price': price},
-                )
+        valid_pairs = {(r['from_city'], r['to_city']) for r in POPULAR_ROUTES_DATA}
+        for route in PopularRoute.objects.all():
+            if (route.from_city, route.to_city) not in valid_pairs:
+                route.delete()
 
-            r_data['distance_km'] = distance_km
-            r_data['is_new_territory'] = is_new_territory
+        self.stdout.write(f'Популярные маршруты: {len(POPULAR_ROUTES_DATA)}')
 
-        self.stdout.write(f'Маршруты: {len(ROUTES_DATA)}')
-
-    def _seed_new_territory_cities(self):
-        for name in NEW_TERRITORY_CITIES:
-            NewTerritoryCity.objects.update_or_create(
-                name=name,
-                defaults={'is_active': True},
+    def _seed_new_territory_routes(self):
+        for r_data in NEW_TERRITORY_ROUTES_DATA:
+            NewTerritoryRoute.objects.update_or_create(
+                from_city=r_data['from_city'],
+                to_city=r_data['to_city'],
+                defaults=r_data,
             )
-        self.stdout.write(f'Города новых территорий: {len(NEW_TERRITORY_CITIES)}')
+
+        self.stdout.write(f'Новые территории: {len(NEW_TERRITORY_ROUTES_DATA)}')
 
     def _cleanup_orphan_tariffs(self):
         valid_slugs = [t['slug'] for t in TARIFFS_DATA]

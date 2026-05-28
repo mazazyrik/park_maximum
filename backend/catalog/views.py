@@ -1,8 +1,13 @@
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import Tariff, PopularRoute, NewTerritoryCity
-from .serializers import TariffSerializer, PopularRouteSerializer, PricingConfigSerializer
+from .models import Tariff, PopularRoute, NewTerritoryRoute
+from .serializers import (
+    TariffSerializer,
+    PopularRouteSerializer,
+    NewTerritoryRouteSerializer,
+    PricingConfigSerializer,
+)
 
 
 class TariffListView(generics.ListAPIView):
@@ -11,15 +16,20 @@ class TariffListView(generics.ListAPIView):
 
 
 class PopularRouteListView(generics.ListAPIView):
-    queryset = PopularRoute.objects.filter(is_active=True).prefetch_related('prices__tariff')
+    queryset = PopularRoute.objects.filter(is_active=True)
     serializer_class = PopularRouteSerializer
+
+
+class NewTerritoryRouteListView(generics.ListAPIView):
+    queryset = NewTerritoryRoute.objects.filter(is_active=True)
+    serializer_class = NewTerritoryRouteSerializer
 
 
 class PricingConfigView(APIView):
     def get(self, request):
         data = {
             'new_territory_cities': list(
-                NewTerritoryCity.objects.filter(is_active=True).values_list('name', flat=True)
+                NewTerritoryRoute.objects.filter(is_active=True).values_list('to_city', flat=True)
             ),
             'minivan_slugs': ['minivan', 'minivan8'],
         }
