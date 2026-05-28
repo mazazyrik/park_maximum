@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -275,13 +276,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         token = settings.TELEGRAM_BOT_TOKEN
+        master_admin_id = settings.TELEGRAM_MASTER_ADMIN_ID
         if not token:
             self.stderr.write('TELEGRAM_BOT_TOKEN is not configured')
-            return
+            sys.exit(1)
 
-        if not settings.TELEGRAM_MASTER_ADMIN_ID:
+        if not master_admin_id:
             self.stderr.write('TELEGRAM_MASTER_ADMIN_ID is not configured')
-            return
+            sys.exit(1)
 
         application = Application.builder().token(token).build()
 
