@@ -115,5 +115,15 @@ CSRF_TRUSTED_ORIGINS = config(
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+
+def int_config(name, default=0):
+    value = config(name, default='')
+    if value in (None, ''):
+        return default
+    return int(value)
+
+
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
-TELEGRAM_MASTER_ADMIN_ID = config('TELEGRAM_MASTER_ADMIN_ID', default=0, cast=int)
+TELEGRAM_MASTER_ADMIN_ID = int_config('TELEGRAM_MASTER_ADMIN_ID')
+if not TELEGRAM_MASTER_ADMIN_ID:
+    TELEGRAM_MASTER_ADMIN_ID = int_config('TELEGRAM_CHAT_ID')

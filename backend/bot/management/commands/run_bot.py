@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -34,6 +35,7 @@ from bot.services import (
     add_or_activate_admin,
     deactivate_admin,
     get_active_admins,
+    get_notification_recipient_ids,
     get_order_notifications,
     get_recent_orders,
     is_bot_admin,
@@ -255,19 +257,28 @@ async def handle_order_action(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     await query.answer('Готово.')
     admin_label = format_admin_name(query.from_user)
-    updated_text = format_order_message(order, processed_by=admin_label, action=action)
+    processed_text = format_order_message(order, processed_by=admin_label, action=action)
     notifications = await sync_to_async(get_order_notifications)(order_id)
+    recipient_ids = await sync_to_async(get_notification_recipient_ids)()
 
     for notification in notifications:
         try:
-            await context.bot.edit_message_text(
+            await context.bot.delete_message(
                 chat_id=notification.telegram_user_id,
                 message_id=notification.message_id,
-                text=updated_text,
+            )
+        except Exception as exc:
+            logger.warning('Failed to delete notification %s: %s', notification.pk, exc)
+
+    for recipient_id in recipient_ids:
+        try:
+            await context.bot.send_message(
+                chat_id=recipient_id,
+                text=processed_text,
                 parse_mode=ParseMode.HTML,
             )
         except Exception as exc:
-            logger.warning('Failed to update notification %s: %s', notification.pk, exc)
+            logger.warning('Failed to send processed order %s to %s: %s', order_id, recipient_id, exc)
 
 
 class Command(BaseCommand):
@@ -275,13 +286,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         token = settings.TELEGRAM_BOT_TOKEN
+        master_admin_id = settings.TELEGRAM_MASTER_ADMIN_ID
         if not token:
             self.stderr.write('TELEGRAM_BOT_TOKEN is not configured')
-            return
+            sys.exit(1)
 
-        if not settings.TELEGRAM_MASTER_ADMIN_ID:
+        if not master_admin_id:
             self.stderr.write('TELEGRAM_MASTER_ADMIN_ID is not configured')
-            return
+            sys.exit(1)
 
         application = Application.builder().token(token).build()
 

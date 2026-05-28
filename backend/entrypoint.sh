@@ -13,6 +13,15 @@ until python -c "import psycopg2; psycopg2.connect(
 done
 echo "Postgres is up."
 
+is_bot_runner=false
+if [ "$#" -gt 0 ] && [ "$1" = "python" ] && [ "$3" = "run_bot" ]; then
+  is_bot_runner=true
+fi
+
+if [ "$is_bot_runner" = "true" ]; then
+  exec "$@"
+fi
+
 python manage.py migrate --noinput
 python manage.py seed_data
 python manage.py collectstatic --noinput

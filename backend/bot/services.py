@@ -56,7 +56,7 @@ def get_order_notifications(order_id):
 
 def process_order_action(order_id, action):
     with transaction.atomic():
-        order = Order.objects.select_for_update().get(pk=order_id)
+        order = Order.objects.select_related('tariff', 'car').select_for_update().get(pk=order_id)
         if order.status != Order.STATUS_NEW:
             return None, 'already_processed'
 
