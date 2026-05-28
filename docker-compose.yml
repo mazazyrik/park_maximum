@@ -30,6 +30,18 @@ services:
     expose:
       - '8000'
 
+  bot:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ['python', 'manage.py', 'run_bot']
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+
   nginx:
     build:
       context: .

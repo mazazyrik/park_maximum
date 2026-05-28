@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django_filters',
     'catalog',
     'orders',
+    'bot',
 ]
 
 MIDDLEWARE = [
@@ -115,4 +116,4 @@ CSRF_TRUSTED_ORIGINS = config(
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
-TELEGRAM_CHAT_ID = config('TELEGRAM_CHAT_ID', default='')
+TELEGRAM_MASTER_ADMIN_ID = config('TELEGRAM_MASTER_ADMIN_ID', default=0, cast=int)
