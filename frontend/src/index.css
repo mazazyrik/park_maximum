@@ -9,7 +9,7 @@
 }
 
 :root {
-  --header-height: 200px;
+  --header-height: 92px;
   --page-padding: clamp(16px, 3.5vw, 50px);
   --section-gap: clamp(32px, 5vw, 80px);
   --content-max: 1440px;
@@ -18,13 +18,13 @@
 
 @media (max-width: 1279px) and (min-width: 768px) {
   :root {
-    --header-height: 260px;
+    --header-height: 136px;
   }
 }
 
 @media (max-width: 767px) {
   :root {
-    --header-height: 132px;
+    --header-height: 76px;
   }
 }
 
@@ -71,26 +71,17 @@ img {
   width: 100%;
   z-index: 50;
   background: #282828;
-  min-height: var(--header-height);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-}
-
-@media (max-width: 767px) {
-  .site-header {
-    height: auto;
-  }
 }
 
 .site-header-inner {
   width: 100%;
-  padding: 12px clamp(8px, 1.2vw, 20px) 12px clamp(4px, 0.8vw, 16px);
+  padding: 10px clamp(8px, 1.2vw, 20px) 10px clamp(4px, 0.8vw, 16px);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   column-gap: clamp(16px, 3vw, 40px);
-  min-height: 160px;
 }
 
 .header-logo {
@@ -101,9 +92,9 @@ img {
 }
 
 .header-logo-img {
-  width: clamp(300px, 32vw, 600px);
-  height: auto;
-  max-height: clamp(130px, 16vw, 240px);
+  width: auto;
+  height: clamp(44px, 5.5vw, 72px);
+  max-width: min(320px, 38vw);
   object-fit: contain;
   object-position: left center;
   display: block;
@@ -163,14 +154,14 @@ img {
 }
 
 .header-icon {
-  width: clamp(36px, 4vw, 50px);
-  height: clamp(36px, 4vw, 50px);
+  width: clamp(28px, 3vw, 40px);
+  height: clamp(28px, 3vw, 40px);
   display: block;
 }
 
 .site-header-nav-row {
   width: 100%;
-  padding: 0 clamp(8px, 1.2vw, 20px) 16px;
+  padding: 0 clamp(8px, 1.2vw, 20px) 10px;
   display: none;
   justify-content: center;
 }
@@ -210,13 +201,12 @@ img {
 
   .site-header-inner {
     grid-template-columns: minmax(0, 1fr) auto;
-    min-height: 72px;
     padding-left: 4px;
   }
 
   .header-logo-img {
-    width: min(72vw, 320px);
-    max-height: 110px;
+    height: clamp(40px, 11vw, 56px);
+    max-width: min(72vw, 280px);
   }
 }
 
@@ -340,17 +330,16 @@ img {
 
 @media (orientation: landscape) and (max-height: 520px) {
   .site-header-inner {
-    min-height: 72px;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
   }
 
   .header-logo-img {
-    max-height: 64px;
+    height: 44px;
   }
 
   :root {
-    --header-height: 88px;
+    --header-height: 64px;
   }
 }
 
@@ -1248,8 +1237,8 @@ img {
 
 @media (max-width: 479px) {
   .header-logo-img {
-    width: min(78vw, 300px);
-    max-height: 104px;
+    height: clamp(36px, 10vw, 48px);
+    max-width: min(78vw, 240px);
   }
 
   .about-body {
