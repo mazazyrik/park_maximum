@@ -9,7 +9,7 @@
 }
 
 :root {
-  --header-height: 92px;
+  --header-height: 288px;
   --page-padding: clamp(16px, 3.5vw, 50px);
   --section-gap: clamp(32px, 5vw, 80px);
   --content-max: 1440px;
@@ -18,13 +18,13 @@
 
 @media (max-width: 1279px) and (min-width: 768px) {
   :root {
-    --header-height: 136px;
+    --header-height: 312px;
   }
 }
 
 @media (max-width: 767px) {
   :root {
-    --header-height: 76px;
+    --header-height: 132px;
   }
 }
 
@@ -93,8 +93,8 @@ img {
 
 .header-logo-img {
   width: auto;
-  height: clamp(44px, 5.5vw, 72px);
-  max-width: min(320px, 38vw);
+  height: clamp(108px, 14vw, 264px);
+  max-width: min(640px, 58vw);
   object-fit: contain;
   object-position: left center;
   display: block;
@@ -205,8 +205,8 @@ img {
   }
 
   .header-logo-img {
-    height: clamp(40px, 11vw, 56px);
-    max-width: min(72vw, 280px);
+    height: clamp(90px, 18vw, 132px);
+    max-width: min(86vw, 440px);
   }
 }
 
@@ -335,11 +335,11 @@ img {
   }
 
   .header-logo-img {
-    height: 44px;
+    height: 96px;
   }
 
   :root {
-    --header-height: 64px;
+    --header-height: 116px;
   }
 }
 
@@ -1237,8 +1237,8 @@ img {
 
 @media (max-width: 479px) {
   .header-logo-img {
-    height: clamp(36px, 10vw, 48px);
-    max-width: min(78vw, 240px);
+    height: clamp(82px, 18vw, 104px);
+    max-width: min(86vw, 380px);
   }
 
   .about-body {

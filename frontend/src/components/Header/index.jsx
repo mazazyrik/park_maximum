@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { IMAGES } from '../../constants/images'
-import { PHONE_DISPLAY, PHONE_HREF, TELEGRAM_URL } from '../../constants/contacts'
+import { PHONE_DISPLAY, PHONE_HREF, EMAIL_HREF, TELEGRAM_URL } from '../../constants/contacts'
 
 const NAV_ITEMS = [
   { type: 'link', to: '/', label: 'Главная' },
@@ -50,7 +50,7 @@ function Contacts({ compact = false }) {
       <a href={PHONE_HREF} className='header-phone'>
         {PHONE_DISPLAY}
       </a>
-      <a href='mailto:name@mail.ru' className='header-icon-link'>
+      <a href={EMAIL_HREF} className='header-icon-link'>
         <img src={IMAGES.iconMail} alt='Email' className='header-icon' loading='lazy' decoding='async' />
       </a>
       <a href={TELEGRAM_URL} className='header-icon-link' target='_blank' rel='noreferrer'>
