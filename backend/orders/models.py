@@ -8,6 +8,7 @@ class Order(models.Model):
     STATUS_IN_PROGRESS = 'in_progress'
     STATUS_COMPLETED = 'completed'
     STATUS_CANCELLED = 'cancelled'
+    STATUS_REJECTED = 'rejected'
 
     STATUS_CHOICES = [
         (STATUS_NEW, 'Новая'),
@@ -15,6 +16,7 @@ class Order(models.Model):
         (STATUS_IN_PROGRESS, 'В пути'),
         (STATUS_COMPLETED, 'Завершена'),
         (STATUS_CANCELLED, 'Отменена'),
+        (STATUS_REJECTED, 'Отклонена'),
     ]
 
     from_address = models.TextField('Откуда')
