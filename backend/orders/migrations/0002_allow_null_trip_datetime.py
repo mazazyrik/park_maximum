@@ -1,0 +1,18 @@
+# Generated manually for nullable trip_datetime
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('orders', '0001_initial'),
+    ]
+
+    operations = [
+        migrations.AlterField(
+            model_name='order',
+            name='trip_datetime',
+            field=models.DateTimeField(blank=True, null=True, verbose_name='Дата и время поездки'),
+        ),
+    ]

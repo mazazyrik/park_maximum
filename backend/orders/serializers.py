@@ -10,6 +10,16 @@ class OrderCreateSerializer(serializers.ModelSerializer):
             'trip_datetime', 'need_docs', 'distance_km',
             'estimated_cost', 'fio', 'phone',
         )
+        extra_kwargs = {
+            'from_address': {'required': True},
+            'to_address': {'required': True},
+            'trip_datetime': {'required': False, 'allow_null': True},
+            'tariff': {'required': False, 'allow_null': True},
+            'car': {'required': False, 'allow_null': True},
+            'distance_km': {'required': False},
+            'estimated_cost': {'required': False},
+            'need_docs': {'required': False},
+        }
 
     def validate_phone(self, value):
         cleaned = ''.join(c for c in value if c.isdigit() or c in '+-() ')
