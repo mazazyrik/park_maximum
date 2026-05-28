@@ -1,4 +1,4 @@
-git #!/bin/sh
+#!/bin/sh
 set -e
 
 echo "Waiting for postgres..."
