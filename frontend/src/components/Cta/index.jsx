@@ -3,7 +3,7 @@ export default function Cta() {
     <section className='section-block cta-section' id='calc'>
       <div className='container-inner cta-inner'>
         <p className='cta-text'>
-          Наша задача — подобрать подходящего водителя
+          Наша задача — подобрать подходящего водителя{' '}
           <br className='cta-break' />
           под ваш маршрут, пожелания и формат поездки.
         </p>
