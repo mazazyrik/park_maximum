@@ -3,7 +3,6 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import RegionTabs from './components/RegionTabs'
-import About from './components/About'
 import RoutesSection from './components/Routes'
 import Tariffs from './components/Tariffs'
 import Cta from './components/Cta'
@@ -43,7 +42,6 @@ function MainPage() {
           onTabChange={setActiveRegion}
           onRegionModalClick={setRegionModal}
         />
-        <About />
         <RoutesSection />
         <Tariffs />
         <Cta />

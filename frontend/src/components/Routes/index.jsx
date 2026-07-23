@@ -61,7 +61,7 @@ export default function Routes() {
 
         <div className='routes-cta'>
           <a href='/calculator' className='btn-secondary'>
-            Расчитать стоимость
+            Рассчитать стоимость
           </a>
         </div>
       </div>

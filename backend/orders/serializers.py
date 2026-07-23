@@ -1,4 +1,7 @@
+from decimal import Decimal
+
 from rest_framework import serializers
+from catalog.constants import MINIMUM_DISTANCE_KM
 from .models import Order
 
 
@@ -26,6 +29,34 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if len(''.join(c for c in cleaned if c.isdigit())) < 10:
             raise serializers.ValidationError('Введите корректный номер телефона.')
         return value
+
+    def validate(self, attrs):
+        tariff = attrs.get('tariff')
+        distance_km = attrs.get('distance_km', 0)
+        estimated_cost = attrs.get('estimated_cost', Decimal('0'))
+
+        if tariff is not None and distance_km < MINIMUM_DISTANCE_KM:
+            raise serializers.ValidationError({
+                'distance_km': (
+                    f'Минимальная протяжённость поездки — '
+                    f'{MINIMUM_DISTANCE_KM} км.'
+                ),
+            })
+
+        if tariff is None:
+            errors = {}
+            if distance_km != 0:
+                errors['distance_km'] = (
+                    'Для ручной заявки расстояние должно быть равно 0.'
+                )
+            if estimated_cost != Decimal('0'):
+                errors['estimated_cost'] = (
+                    'Для ручной заявки стоимость должна быть равна 0.'
+                )
+            if errors:
+                raise serializers.ValidationError(errors)
+
+        return attrs
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):

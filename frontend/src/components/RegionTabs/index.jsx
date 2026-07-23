@@ -1,6 +1,6 @@
 const tabs = [
   { id: 'cfo', label: 'ЦФО', bg: '#282828', color: '#fff' },
-  { id: 'south', label: 'Юг-России', bg: '#FEDA00', color: '#282828' },
+  { id: 'south', label: 'Юг России', bg: '#FEDA00', color: '#282828' },
   { id: 'new', label: 'Новые регионы', bg: '#F3F3F3', color: '#282828' },
 ]
 

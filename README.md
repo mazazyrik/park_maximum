@@ -36,6 +36,12 @@
 - Модальное окно заказа с отправкой заявки на backend
 - Цены тарифов и маршрутов подтягиваются из API
 
+### Источники изображений
+
+- Фотография автомобиля на лесной дороге в первом экране: Luke Miller,
+  [Pexels №29381998](https://www.pexels.com/photo/car-speeding-through-scenic-forest-road-29381998/).
+  Используется и адаптируется по [лицензии Pexels](https://www.pexels.com/license/).
+
 ### Backend
 - Django Admin для управления тарифами, автомобилями, маршрутами и заявками
 - REST API для frontend

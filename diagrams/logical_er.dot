@@ -1,0 +1,201 @@
+digraph LogicalER {
+    graph [rankdir=TB, splines=ortho, nodesep=0.4, ranksep=0.8, fontname="Arial", fontsize=12, label="Логическая модель БД (реляционная схема)", labelloc=t, fontsize=16];
+    node [shape=plaintext, fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=9, arrowhead=crow, arrowtail=none, dir=both];
+
+    tariff [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>tariff</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
+            <TR><TD ALIGN="LEFT">slug</TD><TD ALIGN="LEFT">VARCHAR(100) UQ</TD></TR>
+            <TR><TD ALIGN="LEFT">price_per_km</TD><TD ALIGN="LEFT">DECIMAL(8,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+            <TR><TD ALIGN="LEFT">sort_order</TD><TD ALIGN="LEFT">INT</TD></TR>
+        </TABLE>
+    >];
+
+    car [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>car</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">tariff_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">name</TD><TD ALIGN="LEFT">VARCHAR(200)</TD></TR>
+            <TR><TD ALIGN="LEFT">photo</TD><TD ALIGN="LEFT">VARCHAR(255)</TD></TR>
+            <TR><TD ALIGN="LEFT">external_photo_url</TD><TD ALIGN="LEFT">VARCHAR(500)</TD></TR>
+            <TR><TD ALIGN="LEFT">extra_price_per_km</TD><TD ALIGN="LEFT">DECIMAL(8,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+            <TR><TD ALIGN="LEFT">sort_order</TD><TD ALIGN="LEFT">INT</TD></TR>
+        </TABLE>
+    >];
+
+    popular_route [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>popular_route</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">from_city</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
+            <TR><TD ALIGN="LEFT">to_city</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
+            <TR><TD ALIGN="LEFT">distance_km</TD><TD ALIGN="LEFT">INT</TD></TR>
+            <TR><TD ALIGN="LEFT">duration_hours</TD><TD ALIGN="LEFT">INT</TD></TR>
+            <TR><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+            <TR><TD ALIGN="LEFT">sort_order</TD><TD ALIGN="LEFT">INT</TD></TR>
+        </TABLE>
+    >];
+
+    new_territory_route [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>new_territory_route</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">from_city</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
+            <TR><TD ALIGN="LEFT">to_city</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
+            <TR><TD ALIGN="LEFT">from_price</TD><TD ALIGN="LEFT">DECIMAL(10,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+            <TR><TD ALIGN="LEFT">sort_order</TD><TD ALIGN="LEFT">INT</TD></TR>
+        </TABLE>
+    >];
+
+    client [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>client</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">fio</TD><TD ALIGN="LEFT">VARCHAR(300)</TD></TR>
+            <TR><TD ALIGN="LEFT">phone</TD><TD ALIGN="LEFT">VARCHAR(30)</TD></TR>
+            <TR><TD ALIGN="LEFT">email</TD><TD ALIGN="LEFT">VARCHAR(254)</TD></TR>
+            <TR><TD ALIGN="LEFT">registered_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+        </TABLE>
+    >];
+
+    driver [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>driver</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">fio</TD><TD ALIGN="LEFT">VARCHAR(300)</TD></TR>
+            <TR><TD ALIGN="LEFT">phone</TD><TD ALIGN="LEFT">VARCHAR(30)</TD></TR>
+            <TR><TD ALIGN="LEFT">license_number</TD><TD ALIGN="LEFT">VARCHAR(50)</TD></TR>
+            <TR><TD ALIGN="LEFT">experience_years</TD><TD ALIGN="LEFT">INT</TD></TR>
+            <TR><TD ALIGN="LEFT">rating</TD><TD ALIGN="LEFT">DECIMAL(3,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+            <TR><TD ALIGN="LEFT">added_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+        </TABLE>
+    >];
+
+    order_tbl [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>order</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">client_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">from_address</TD><TD ALIGN="LEFT">TEXT</TD></TR>
+            <TR><TD ALIGN="LEFT">to_address</TD><TD ALIGN="LEFT">TEXT</TD></TR>
+            <TR><TD ALIGN="LEFT">tariff_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">car_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">trip_datetime</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">need_docs</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+            <TR><TD ALIGN="LEFT">distance_km</TD><TD ALIGN="LEFT">INT</TD></TR>
+            <TR><TD ALIGN="LEFT">estimated_cost</TD><TD ALIGN="LEFT">DECIMAL(10,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+            <TR><TD ALIGN="LEFT">notes</TD><TD ALIGN="LEFT">TEXT</TD></TR>
+            <TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">updated_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+        </TABLE>
+    >];
+
+    trip [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>trip</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">order_id</TD><TD ALIGN="LEFT">BIGINT FK UQ</TD></TR>
+            <TR><TD ALIGN="LEFT">driver_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">car_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">started_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">finished_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">actual_cost</TD><TD ALIGN="LEFT">DECIMAL(10,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+        </TABLE>
+    >];
+
+    payment [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>payment</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">trip_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">amount</TD><TD ALIGN="LEFT">DECIMAL(10,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">payment_method</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+            <TR><TD ALIGN="LEFT">payment_status</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+            <TR><TD ALIGN="LEFT">paid_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+        </TABLE>
+    >];
+
+    driver_shift [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>driver_shift</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">driver_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">started_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">ended_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">status</TD><TD ALIGN="LEFT">VARCHAR(20)</TD></TR>
+        </TABLE>
+    >];
+
+    vehicle_maintenance [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>vehicle_maintenance</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">car_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">service_date</TD><TD ALIGN="LEFT">DATE</TD></TR>
+            <TR><TD ALIGN="LEFT">work_type</TD><TD ALIGN="LEFT">VARCHAR(100)</TD></TR>
+            <TR><TD ALIGN="LEFT">mileage</TD><TD ALIGN="LEFT">INT</TD></TR>
+            <TR><TD ALIGN="LEFT">cost</TD><TD ALIGN="LEFT">DECIMAL(10,2)</TD></TR>
+            <TR><TD ALIGN="LEFT">description</TD><TD ALIGN="LEFT">TEXT</TD></TR>
+        </TABLE>
+    >];
+
+    review [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>review</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">trip_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">client_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">rating</TD><TD ALIGN="LEFT">SMALLINT</TD></TR>
+            <TR><TD ALIGN="LEFT">comment</TD><TD ALIGN="LEFT">TEXT</TD></TR>
+            <TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+        </TABLE>
+    >];
+
+    telegram_admin [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>telegram_admin</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">user_id</TD><TD ALIGN="LEFT">BIGINT UQ</TD></TR>
+            <TR><TD ALIGN="LEFT">username</TD><TD ALIGN="LEFT">VARCHAR(150)</TD></TR>
+            <TR><TD ALIGN="LEFT">full_name</TD><TD ALIGN="LEFT">VARCHAR(300)</TD></TR>
+            <TR><TD ALIGN="LEFT">added_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+            <TR><TD ALIGN="LEFT">is_active</TD><TD ALIGN="LEFT">BOOLEAN</TD></TR>
+        </TABLE>
+    >];
+
+    order_notification [label=<
+        <TABLE BORDER="1" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD COLSPAN="2"><B>order_notification</B></TD></TR>
+            <TR><TD ALIGN="LEFT"><U>id</U></TD><TD ALIGN="LEFT">BIGINT PK</TD></TR>
+            <TR><TD ALIGN="LEFT">order_id</TD><TD ALIGN="LEFT">BIGINT FK</TD></TR>
+            <TR><TD ALIGN="LEFT">telegram_user_id</TD><TD ALIGN="LEFT">BIGINT</TD></TR>
+            <TR><TD ALIGN="LEFT">message_id</TD><TD ALIGN="LEFT">BIGINT</TD></TR>
+            <TR><TD ALIGN="LEFT">created_at</TD><TD ALIGN="LEFT">TIMESTAMP</TD></TR>
+        </TABLE>
+    >];
+
+    tariff -> car [label="1:M"];
+    client -> order_tbl [label="1:M"];
+    tariff -> order_tbl [label="1:M"];
+    car -> order_tbl [label="1:M"];
+    order_tbl -> trip [label="1:1"];
+    driver -> trip [label="1:M"];
+    car -> trip [label="1:M"];
+    trip -> payment [label="1:M"];
+    driver -> driver_shift [label="1:M"];
+    car -> vehicle_maintenance [label="1:M"];
+    trip -> review [label="1:M"];
+    client -> review [label="1:M"];
+    order_tbl -> order_notification [label="1:M"];
+}

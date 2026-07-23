@@ -1,3 +1,9 @@
+import heroRoadDesktopAvif from '../assets/images/hero-road-1600.avif'
+import heroRoadDesktopWebp from '../assets/images/hero-road-1600.webp'
+import heroRoadMobileAvif from '../assets/images/hero-road-800.avif'
+import heroRoadMobileWebp from '../assets/images/hero-road-800.webp'
+import logoHeader from '../assets/images/logo-header.webp'
+
 const STATIC_BASE = import.meta.env.VITE_STATIC_URL
   || 'https://cdn.jsdelivr.net/gh/mazazyrik/park_maximum@main/frontend/src/assets/images'
 
@@ -6,8 +12,11 @@ export function staticImage(name) {
 }
 
 export const IMAGES = {
-  heroCar: staticImage('hero-car.webp'),
-  logoDark: staticImage('logo-dark.webp'),
+  heroRoadDesktopAvif,
+  heroRoadDesktopWebp,
+  heroRoadMobileAvif,
+  heroRoadMobileWebp,
+  logoDark: logoHeader,
   logoLight: staticImage('logo-light.webp'),
   iconMail: staticImage('icon-mail.webp'),
   iconTelegram: staticImage('icon-telegram.webp'),

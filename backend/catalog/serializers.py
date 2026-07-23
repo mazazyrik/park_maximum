@@ -49,3 +49,4 @@ class NewTerritoryRouteSerializer(serializers.ModelSerializer):
 class PricingConfigSerializer(serializers.Serializer):
     new_territory_cities = serializers.ListField(child=serializers.CharField())
     minivan_slugs = serializers.ListField(child=serializers.CharField())
+    minimum_distance_km = serializers.IntegerField(min_value=1)

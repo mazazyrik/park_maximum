@@ -2,11 +2,13 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Header from '../../components/Header'
 import Footer from '../../components/Footer'
 import OrderModal from './OrderModal'
+import DistanceLimitModal from './DistanceLimitModal'
 import { fetchTariffs, fetchPricingConfig } from '../../api'
 import { isNewTerritoryRoute, mapTariffsForCalculator } from '../../utils/pricing'
 import { loadYandexMaps } from '../../utils/yandexMaps'
 
 const GEOCODER_KEY = 'ae36e2e8-3202-4ead-8128-cca559d477a5'
+const DEFAULT_MINIMUM_DISTANCE_KM = 200
 
 const FALLBACK_TARIFFS = [
   { id: 'standard', slug: 'standard', label: 'Стандарт', price: 30 },
@@ -74,23 +76,24 @@ async function getOsrmDistance(fromCoords, toCoords) {
   }
 }
 
-function haversine([lat1, lon1], [lat2, lon2]) {
-  const R = 6371
-  const d = Math.PI / 180
-  const dLat = (lat2 - lat1) * d
-  const dLon = (lon2 - lon1) * d
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * d) * Math.cos(lat2 * d) * Math.sin(dLon / 2) ** 2
-  return Math.round(2 * R * Math.asin(Math.sqrt(a)))
-}
-
-function SuggestInput({ label, value, onChange, onSelect, placeholder, suggestions, showSugg, onFocus, onBlur }) {
+function SuggestInput({
+  label,
+  value,
+  onChange,
+  onSelect,
+  placeholder,
+  suggestions,
+  showSugg,
+  onFocus,
+  onBlur,
+  inputRef,
+}) {
   return (
     <div>
       <label className='calc-label'>{label}</label>
       <div className='calc-input-wrap'>
         <input
+          ref={inputRef}
           type='text'
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -126,6 +129,7 @@ export default function Calculator() {
   const [pricingConfig, setPricingConfig] = useState({
     new_territory_cities: ['Луганск', 'Донецк'],
     minivan_slugs: ['minivan', 'minivan8'],
+    minimum_distance_km: DEFAULT_MINIMUM_DISTANCE_KM,
   })
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -137,8 +141,10 @@ export default function Calculator() {
   const [distance, setDistance] = useState(null)
   const [cost, setCost] = useState(null)
   const [isRouting, setIsRouting] = useState(false)
+  const [routeError, setRouteError] = useState(null)
   const [mapsReady, setMapsReady] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [showDistanceModal, setShowDistanceModal] = useState(false)
   const [fromSugg, setFromSugg] = useState([])
   const [toSugg, setToSugg] = useState([])
   const [showFromSugg, setShowFromSugg] = useState(false)
@@ -149,6 +155,13 @@ export default function Calculator() {
   const mapInitDone = useRef(false)
   const suggestTimer = useRef(null)
   const routeTimer = useRef(null)
+  const routeRequestId = useRef(0)
+  const toInputRef = useRef(null)
+  const lastWarnedRouteRef = useRef(null)
+
+  const minimumDistance = Number(
+    pricingConfig.minimum_distance_km || DEFAULT_MINIMUM_DISTANCE_KM,
+  )
 
   const isNewTerritory = isNewTerritoryRoute(
     from,
@@ -177,6 +190,8 @@ export default function Calculator() {
     setTariffId('')
     setDistance(null)
     setCost(null)
+    setRouteError(null)
+    setShowDistanceModal(false)
     setNeedDocs(false)
     setDatetime('')
     if (mapInstance.current) {
@@ -205,6 +220,7 @@ export default function Calculator() {
   function handleFromChange(val) {
     setFrom(val)
     setFromCoords(null)
+    resetCalculatedRoute()
     setShowFromSugg(true)
     clearTimeout(suggestTimer.current)
     if (!val.trim()) { setFromSugg([]); return }
@@ -217,6 +233,7 @@ export default function Calculator() {
   function handleToChange(val) {
     setTo(val)
     setToCoords(null)
+    resetCalculatedRoute()
     setShowToSugg(true)
     clearTimeout(suggestTimer.current)
     if (!val.trim()) { setToSugg([]); return }
@@ -240,63 +257,144 @@ export default function Calculator() {
     setShowToSugg(false)
   }
 
+  function resetCalculatedRoute() {
+    setDistance(null)
+    setCost(null)
+    setRouteError(null)
+    setIsRouting(false)
+    setShowDistanceModal(false)
+    routeRequestId.current += 1
+    lastWarnedRouteRef.current = null
+    if (mapInstance.current) {
+      mapInstance.current.geoObjects.removeAll()
+    }
+  }
+
   useEffect(() => {
     if (isNewTerritory) return undefined
     clearTimeout(routeTimer.current)
     if (!fromCoords || !toCoords) return undefined
 
+    const requestId = routeRequestId.current + 1
+    routeRequestId.current = requestId
     routeTimer.current = setTimeout(async () => {
       setIsRouting(true)
+      setRouteError(null)
 
       const osrmKm = await getOsrmDistance(fromCoords, toCoords)
-      const km = osrmKm !== null ? osrmKm : haversine(fromCoords, toCoords)
-      setDistance(km)
+      if (routeRequestId.current !== requestId) return
+      let yandexKm = null
+      let yandexRoute = null
 
       if (mapsReady && window.ymaps && mapInstance.current) {
-        window.ymaps.route([fromCoords, toCoords], { routingMode: 'auto' }).then(
-          (route) => {
-            mapInstance.current.geoObjects.removeAll()
-            mapInstance.current.geoObjects.add(route.getPaths())
-            mapInstance.current.setBounds(route.getBounds(), { checkZoomRange: true })
-          },
-          () => {}
-        )
+        try {
+          yandexRoute = await window.ymaps.route(
+            [fromCoords, toCoords],
+            { routingMode: 'auto' },
+          )
+          yandexKm = Math.round(yandexRoute.getLength() / 1000)
+          mapInstance.current.geoObjects.removeAll()
+          mapInstance.current.geoObjects.add(yandexRoute.getPaths())
+          mapInstance.current.setBounds(
+            yandexRoute.getBounds(),
+            { checkZoomRange: true },
+          )
+        } catch {
+          yandexRoute = null
+        }
       }
 
+      if (routeRequestId.current !== requestId) return
+      const km = osrmKm !== null ? osrmKm : yandexKm
+      if (km === null) {
+        setDistance(null)
+        setCost(null)
+        setRouteError('Не удалось рассчитать автомобильный маршрут. Попробуйте ещё раз.')
+        setIsRouting(false)
+        return
+      }
+
+      setDistance(km)
+      const routeKey = `${fromCoords.join(',')}|${toCoords.join(',')}`
+      if (km < minimumDistance && lastWarnedRouteRef.current !== routeKey) {
+        lastWarnedRouteRef.current = routeKey
+        setShowDistanceModal(true)
+      }
       setIsRouting(false)
     }, 300)
 
-    return () => clearTimeout(routeTimer.current)
-  }, [fromCoords, toCoords, mapsReady, isNewTerritory])
+    return () => {
+      clearTimeout(routeTimer.current)
+      if (routeRequestId.current === requestId) {
+        routeRequestId.current += 1
+      }
+    }
+  }, [fromCoords, toCoords, mapsReady, isNewTerritory, minimumDistance])
+
+  const isBelowMinimum =
+    !isNewTerritory
+    && distance !== null
+    && distance < minimumDistance
 
   useEffect(() => {
     if (isNewTerritory) {
       setCost(null)
       return
     }
-    if (distance === null || !tariffId) { setCost(null); return }
+    if (distance === null || isBelowMinimum || routeError || !tariffId) {
+      setCost(null)
+      return
+    }
     const t = tariffs.find((x) => String(x.id) === tariffId)
     if (!t) return
     let price = distance * t.price
     if (needDocs) price = Math.round(price * 1.1)
     setCost(Math.round(price))
-  }, [distance, tariffId, needDocs, tariffs, isNewTerritory])
+  }, [
+    distance,
+    tariffId,
+    needDocs,
+    tariffs,
+    isNewTerritory,
+    isBelowMinimum,
+    routeError,
+  ])
 
   const distanceText = isNewTerritory
     ? '—'
     : isRouting
     ? 'вычисляется...'
+    : routeError
+    ? 'не удалось рассчитать'
     : distance !== null
     ? `${distance} км`
     : '—'
 
   const costText = isNewTerritory
     ? '—'
+    : isBelowMinimum
+    ? 'расчёт недоступен'
+    : routeError
+    ? 'расчёт недоступен'
     : cost !== null
     ? `${cost.toLocaleString('ru-RU')} руб`
     : '—'
 
   const selectedTariff = tariffs.find((t) => String(t.id) === tariffId)
+  const canSubmit = isNewTerritory
+    ? true
+    : (
+        distance !== null
+        && distance >= minimumDistance
+        && Boolean(tariffId)
+        && !isRouting
+        && !routeError
+      )
+
+  function closeDistanceModal() {
+    setShowDistanceModal(false)
+    window.requestAnimationFrame(() => toInputRef.current?.focus())
+  }
 
   return (
     <>
@@ -305,6 +403,9 @@ export default function Calculator() {
         <section className='calc-section'>
           <div className='container-inner'>
             <h1 className='calc-title'>Калькулятор</h1>
+            <p className='calc-lead'>
+              Осуществляем поездки протяжённостью от {minimumDistance} км.
+            </p>
 
             {isNewTerritory && (
               <p className='calc-territory-note'>
@@ -334,6 +435,7 @@ export default function Calculator() {
                 showSugg={showToSugg}
                 onFocus={() => setShowToSugg(toSugg.length > 0)}
                 onBlur={() => setTimeout(() => setShowToSugg(false), 160)}
+                inputRef={toInputRef}
               />
             </div>
 
@@ -403,6 +505,16 @@ export default function Calculator() {
                 <p className='calc-summary-line'>
                   Стоимость (прим.): {costText}
                 </p>
+                {isBelowMinimum && (
+                  <p className='calc-summary-alert' role='status'>
+                    Расчёт недоступен: минимальная дистанция — {minimumDistance} км.
+                  </p>
+                )}
+                {routeError && (
+                  <p className='calc-summary-alert' role='status'>
+                    {routeError}
+                  </p>
+                )}
                 {!isNewTerritory && (
                   <>
                     <p className='calc-summary-note'>
@@ -434,11 +546,19 @@ export default function Calculator() {
             <div className='calc-submit-wrap'>
               <button
                 type='button'
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                  if (canSubmit) setShowModal(true)
+                }}
                 className='calc-submit'
+                disabled={!canSubmit}
               >
                 {isNewTerritory ? 'Оставить заявку' : 'Заказать'}
               </button>
+              {!isNewTerritory && !canSubmit && (
+                <p className='calc-submit-note'>
+                  Укажите маршрут от {minimumDistance} км и выберите тариф.
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -469,6 +589,12 @@ export default function Calculator() {
                 }
           }
           shortRequest={isNewTerritory}
+        />
+      )}
+      {showDistanceModal && (
+        <DistanceLimitModal
+          minimumDistance={minimumDistance}
+          onClose={closeDistanceModal}
         />
       )}
     </>

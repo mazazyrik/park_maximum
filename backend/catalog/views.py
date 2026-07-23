@@ -8,6 +8,7 @@ from .serializers import (
     NewTerritoryRouteSerializer,
     PricingConfigSerializer,
 )
+from .constants import MINIMUM_DISTANCE_KM
 
 
 class TariffListView(generics.ListAPIView):
@@ -32,6 +33,7 @@ class PricingConfigView(APIView):
                 NewTerritoryRoute.objects.filter(is_active=True).values_list('to_city', flat=True)
             ),
             'minivan_slugs': ['minivan', 'minivan8'],
+            'minimum_distance_km': MINIMUM_DISTANCE_KM,
         }
         serializer = PricingConfigSerializer(data)
         return Response(serializer.data)

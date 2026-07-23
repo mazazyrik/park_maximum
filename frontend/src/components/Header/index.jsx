@@ -80,14 +80,14 @@ export default function Header() {
     <header className='site-header'>
       <div className='site-header-inner'>
         <Link to='/' className='header-logo'>
-          <img src={IMAGES.logoDark} alt='Максимум' className='header-logo-img' fetchPriority='high' decoding='async' />
+          <img src={IMAGES.logoDark} alt='Максимум' className='header-logo-img' decoding='async' />
         </Link>
 
         <div className='header-nav-wrap header-nav-wrap--desktop'>
           <NavLinks isCalc={isCalc} />
         </div>
 
-        <div className='header-contacts header-contacts--desktop'>
+        <div className='header-contacts--desktop'>
           <Contacts />
         </div>
 
@@ -107,13 +107,12 @@ export default function Header() {
         </div>
       </div>
 
-      <div className='site-header-nav-row'>
-        <NavLinks isCalc={isCalc} />
-      </div>
-
       {menuOpen && (
         <div className='header-mobile-menu'>
           <NavLinks isCalc={isCalc} onNavigate={() => setMenuOpen(false)} className='header-nav--mobile' />
+          <a href={PHONE_HREF} className='header-mobile-menu-phone' onClick={() => setMenuOpen(false)}>
+            {PHONE_DISPLAY}
+          </a>
         </div>
       )}
     </header>

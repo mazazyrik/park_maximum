@@ -1,0 +1,77 @@
+digraph ConceptualER {
+    graph [rankdir=LR, splines=ortho, nodesep=0.6, ranksep=1.0, fontname="Arial", fontsize=12, label="Концептуальная модель БД", labelloc=t, fontsize=16];
+    node [fontname="Arial", fontsize=11];
+    edge [fontname="Arial", fontsize=10];
+
+    Tariff [shape=box, label="Тариф\n─────\nназвание\nцена_за_км\nslug\nактивность"];
+    Car [shape=box, label="Автомобиль\n─────\nназвание\nдоп_цена_за_км\nфото\nактивность"];
+    PopularRoute [shape=box, label="Популярный маршрут\n─────\nоткуда\nкуда\nрасстояние\nактивность"];
+    NewTerritoryRoute [shape=box, label="Маршрут новой территории\n─────\nоткуда\nкуда\nцена_от\nактивность"];
+    Client [shape=box, label="Клиент\n─────\nФИО\nтелефон\nemail\nстатус"];
+    Driver [shape=box, label="Водитель\n─────\nФИО\nтелефон\nВУ\nстаж\nрейтинг"];
+    Order [shape=box, label="Заявка\n─────\nадрес_откуда\nадрес_куда\nдата_поездки\nстоимость\nстатус"];
+    Trip [shape=box, label="Поездка\n─────\nвремя_начала\nвремя_окончания\nитоговая_стоимость\nстатус"];
+    Payment [shape=box, label="Оплата\n─────\nсумма\nспособ\nстатус\nдата"];
+    DriverShift [shape=box, label="Смена водителя\n─────\nначало\nокончание\nстатус"];
+    Maintenance [shape=box, label="Техобслуживание\n─────\nдата\nтип_работ\nпробег\nстоимость"];
+    Review [shape=box, label="Отзыв\n─────\nоценка\nкомментарий\nдата"];
+    TelegramAdmin [shape=box, label="Telegram-администратор\n─────\nTelegram ID\nusername\nактивность"];
+    Notification [shape=box, label="Уведомление\n─────\nmessage_id\nдата_отправки"];
+
+    R1 [shape=diamond, label="включает"];
+    R2 [shape=diamond, label="оформляет"];
+    R3 [shape=diamond, label="выбирает"];
+    R4 [shape=diamond, label="выбирает"];
+    R5 [shape=diamond, label="формирует"];
+    R6 [shape=diamond, label="выполняет"];
+    R7 [shape=diamond, label="использует"];
+    R8 [shape=diamond, label="содержит"];
+    R9 [shape=diamond, label="работает"];
+    R10 [shape=diamond, label="обслуживается"];
+    R11 [shape=diamond, label="оставляет"];
+    R12 [shape=diamond, label="получает"];
+    R13 [shape=diamond, label="связано"];
+    R14 [shape=diamond, label="отправляется"];
+
+    Tariff -> R1 [label="1"];
+    R1 -> Car [label="M"];
+
+    Client -> R2 [label="1"];
+    R2 -> Order [label="M"];
+
+    Order -> R3 [label="M"];
+    R3 -> Tariff [label="1"];
+
+    Order -> R4 [label="M"];
+    R4 -> Car [label="1"];
+
+    Order -> R5 [label="1"];
+    R5 -> Trip [label="0..1"];
+
+    Driver -> R6 [label="1"];
+    R6 -> Trip [label="M"];
+
+    Car -> R7 [label="1"];
+    R7 -> Trip [label="M"];
+
+    Trip -> R8 [label="1"];
+    R8 -> Payment [label="M"];
+
+    Driver -> R9 [label="1"];
+    R9 -> DriverShift [label="M"];
+
+    Car -> R10 [label="1"];
+    R10 -> Maintenance [label="M"];
+
+    Client -> R11 [label="1"];
+    R11 -> Review [label="M"];
+
+    Trip -> R12 [label="1"];
+    R12 -> Review [label="0..1"];
+
+    Order -> R13 [label="1"];
+    R13 -> Notification [label="M"];
+
+    TelegramAdmin -> R14 [label="1"];
+    R14 -> Notification [label="M"];
+}
