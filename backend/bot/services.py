@@ -1,8 +1,11 @@
-from django.conf import settings
-from django.db import transaction
+from datetime import timedelta
 
-from orders.models import Order
+from django.conf import settings
+from django.db import models, transaction
+from django.utils import timezone
+
 from bot.models import TelegramAdmin, OrderNotification
+from orders.models import Order
 
 
 def is_master_admin(user_id):
@@ -51,7 +54,66 @@ def deactivate_admin(user_id):
 
 
 def get_order_notifications(order_id):
-    return list(OrderNotification.objects.filter(order_id=order_id))
+    return list(
+        OrderNotification.objects.filter(
+            order_id=order_id,
+            message_id__isnull=False,
+        )
+    )
+
+
+def get_pending_order_notifications(limit=20):
+    return list(
+        OrderNotification.objects.select_related('order__tariff', 'order__car')
+        .filter(
+            status__in=[
+                OrderNotification.STATUS_PENDING,
+                OrderNotification.STATUS_RETRY_PENDING,
+            ],
+            next_attempt_at__lte=timezone.now(),
+        )
+        .order_by('next_attempt_at')[:limit]
+    )
+
+
+def mark_notification_sent(notification_id, message_id):
+    OrderNotification.objects.filter(pk=notification_id).update(
+        status=OrderNotification.STATUS_SENT,
+        message_id=message_id,
+        attempts=models.F('attempts') + 1,
+        last_error='',
+        sent_at=timezone.now(),
+    )
+
+
+def mark_notification_failed(notification_id, error):
+    notification = OrderNotification.objects.get(pk=notification_id)
+    attempts = notification.attempts + 1
+    delay_seconds = min(300, 5 * (2 ** min(attempts - 1, 6)))
+    notification.status = OrderNotification.STATUS_RETRY_PENDING
+    notification.attempts = attempts
+    notification.next_attempt_at = timezone.now() + timedelta(seconds=delay_seconds)
+    notification.last_error = str(error)[:1000]
+    notification.save(
+        update_fields=[
+            'status',
+            'attempts',
+            'next_attempt_at',
+            'last_error',
+        ]
+    )
+
+
+def mark_notification_permanently_failed(notification_id, error):
+    notification = OrderNotification.objects.get(pk=notification_id)
+    notification.status = OrderNotification.STATUS_FAILED
+    notification.attempts += 1
+    notification.last_error = str(error)[:1000]
+    notification.save(update_fields=['status', 'attempts', 'last_error'])
+    TelegramAdmin.objects.filter(
+        user_id=notification.telegram_user_id,
+        is_active=True,
+    ).update(is_active=False)
 
 
 def process_order_action(order_id, action):

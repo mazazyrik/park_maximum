@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     POETRY_NO_INTERACTION=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev gcc curl \
+    libpq-dev gcc \
     && rm -rf /var/lib/apt/lists/* \
     && pip install --no-cache-dir "poetry==${POETRY_VERSION}"
 

@@ -1,4 +1,8 @@
+from django.test import override_settings
 from rest_framework.test import APITestCase
+
+from bot.models import OrderNotification, TelegramAdmin
+from bot.services import mark_notification_permanently_failed
 from catalog.models import Tariff
 from catalog.constants import MINIMUM_DISTANCE_KM
 
@@ -44,6 +48,43 @@ class OrderMinimumDistanceTests(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data['distance_km'], MINIMUM_DISTANCE_KM)
+
+    @override_settings(TELEGRAM_MASTER_ADMIN_ID=123456789)
+    def test_queues_notification_without_waiting_for_telegram(self):
+        response = self.client.post(
+            '/api/v1/orders/',
+            self.base_payload,
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 201)
+        notification = OrderNotification.objects.get(
+            order_id=response.data['id'],
+            telegram_user_id=123456789,
+        )
+        self.assertEqual(notification.status, OrderNotification.STATUS_PENDING)
+        self.assertIsNone(notification.message_id)
+
+    @override_settings(TELEGRAM_MASTER_ADMIN_ID=0)
+    def test_permanent_telegram_error_deactivates_admin(self):
+        admin = TelegramAdmin.objects.create(user_id=987654321)
+        response = self.client.post(
+            '/api/v1/orders/',
+            self.base_payload,
+            format='json',
+        )
+        notification = OrderNotification.objects.get(
+            order_id=response.data['id'],
+            telegram_user_id=admin.user_id,
+        )
+
+        mark_notification_permanently_failed(notification.pk, 'Chat not found')
+
+        notification.refresh_from_db()
+        admin.refresh_from_db()
+        self.assertEqual(notification.status, OrderNotification.STATUS_FAILED)
+        self.assertEqual(notification.attempts, 1)
+        self.assertFalse(admin.is_active)
 
     def test_accepts_calculated_order_above_minimum(self):
         payload = {

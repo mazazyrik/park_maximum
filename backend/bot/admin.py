@@ -11,6 +11,15 @@ class TelegramAdminAdmin(admin.ModelAdmin):
 
 @admin.register(OrderNotification)
 class OrderNotificationAdmin(admin.ModelAdmin):
-    list_display = ('order', 'telegram_user_id', 'message_id', 'created_at')
+    list_display = (
+        'order',
+        'telegram_user_id',
+        'status',
+        'attempts',
+        'message_id',
+        'created_at',
+        'sent_at',
+    )
+    list_filter = ('status',)
     search_fields = ('telegram_user_id', 'message_id')
     raw_id_fields = ('order',)

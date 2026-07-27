@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class TelegramAdmin(models.Model):
@@ -19,6 +20,17 @@ class TelegramAdmin(models.Model):
 
 
 class OrderNotification(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_SENT = 'sent'
+    STATUS_RETRY_PENDING = 'retry_pending'
+    STATUS_FAILED = 'failed'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Ожидает отправки'),
+        (STATUS_SENT, 'Отправлено'),
+        (STATUS_RETRY_PENDING, 'Ожидает повторной отправки'),
+        (STATUS_FAILED, 'Не доставлено'),
+    ]
+
     order = models.ForeignKey(
         'orders.Order',
         on_delete=models.CASCADE,
@@ -26,8 +38,23 @@ class OrderNotification(models.Model):
         verbose_name='Заявка',
     )
     telegram_user_id = models.BigIntegerField('Telegram ID')
-    message_id = models.BigIntegerField('Message ID')
-    created_at = models.DateTimeField('Отправлено', auto_now_add=True)
+    message_id = models.BigIntegerField('Message ID', null=True, blank=True)
+    status = models.CharField(
+        'Статус',
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_PENDING,
+        db_index=True,
+    )
+    attempts = models.PositiveSmallIntegerField('Попыток', default=0)
+    next_attempt_at = models.DateTimeField(
+        'Следующая попытка',
+        default=timezone.now,
+        db_index=True,
+    )
+    last_error = models.TextField('Последняя ошибка', blank=True)
+    created_at = models.DateTimeField('Создано', auto_now_add=True)
+    sent_at = models.DateTimeField('Отправлено', null=True, blank=True)
 
     class Meta:
         verbose_name = 'Telegram уведомление'

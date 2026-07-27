@@ -124,6 +124,7 @@ def int_config(name, default=0):
 
 
 TELEGRAM_BOT_TOKEN = config('TELEGRAM_BOT_TOKEN', default='')
+TELEGRAM_PROXY_URL = config('TELEGRAM_PROXY_URL', default='')
 TELEGRAM_MASTER_ADMIN_ID = int_config('TELEGRAM_MASTER_ADMIN_ID')
 if not TELEGRAM_MASTER_ADMIN_ID:
     TELEGRAM_MASTER_ADMIN_ID = int_config('TELEGRAM_CHAT_ID')

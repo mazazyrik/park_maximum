@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import re
 import sys
@@ -7,6 +8,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, Update
 from telegram.constants import ParseMode
+from telegram.error import BadRequest, Forbidden
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -37,13 +39,91 @@ from bot.services import (
     get_active_admins,
     get_notification_recipient_ids,
     get_order_notifications,
+    get_pending_order_notifications,
     get_recent_orders,
     is_bot_admin,
     is_master_admin,
+    mark_notification_failed,
+    mark_notification_permanently_failed,
+    mark_notification_sent,
     process_order_action,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def build_order_keyboard(order_id):
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton('✅ Принять', callback_data=f'accept_{order_id}'),
+                InlineKeyboardButton('❌ Отклонить', callback_data=f'reject_{order_id}'),
+            ],
+        ]
+    )
+
+
+async def deliver_pending_notifications(application):
+    notifications = await sync_to_async(get_pending_order_notifications)()
+    for notification in notifications:
+        try:
+            message = await application.bot.send_message(
+                chat_id=notification.telegram_user_id,
+                text=format_order_message(notification.order),
+                parse_mode=ParseMode.HTML,
+                reply_markup=build_order_keyboard(notification.order_id),
+            )
+        except (BadRequest, Forbidden) as exc:
+            logger.warning(
+                'Permanent Telegram error for order %s notification %s: %s',
+                notification.order_id,
+                notification.pk,
+                exc,
+            )
+            await sync_to_async(mark_notification_permanently_failed)(
+                notification.pk,
+                exc,
+            )
+            continue
+        except Exception as exc:
+            logger.warning(
+                'Failed to send order %s notification %s: %s',
+                notification.order_id,
+                notification.pk,
+                exc,
+            )
+            await sync_to_async(mark_notification_failed)(notification.pk, exc)
+            continue
+
+        await sync_to_async(mark_notification_sent)(
+            notification.pk,
+            message.message_id,
+        )
+
+
+async def notification_worker(application):
+    while True:
+        try:
+            await deliver_pending_notifications(application)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception('Order notification worker failed')
+        await asyncio.sleep(3)
+
+
+async def start_notification_worker(application):
+    application.bot_data['notification_worker'] = asyncio.create_task(
+        notification_worker(application)
+    )
+
+
+async def stop_notification_worker(application):
+    task = application.bot_data.get('notification_worker')
+    if not task:
+        return
+    task.cancel()
+    await asyncio.gather(task, return_exceptions=True)
 
 
 def build_menu_keyboard(user_id):
@@ -295,7 +375,17 @@ class Command(BaseCommand):
             self.stderr.write('TELEGRAM_MASTER_ADMIN_ID is not configured')
             sys.exit(1)
 
-        application = Application.builder().token(token).build()
+        application_builder = (
+            Application.builder()
+            .token(token)
+            .post_init(start_notification_worker)
+            .post_shutdown(stop_notification_worker)
+        )
+        if settings.TELEGRAM_PROXY_URL:
+            application_builder = application_builder.proxy(
+                settings.TELEGRAM_PROXY_URL
+            ).get_updates_proxy(settings.TELEGRAM_PROXY_URL)
+        application = application_builder.build()
 
         application.add_handler(CommandHandler('start', start))
         application.add_handler(CommandHandler('addadmin', addadmin_command))
