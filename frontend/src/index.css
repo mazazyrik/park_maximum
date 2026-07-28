@@ -1040,6 +1040,13 @@ img {
   background: #f8f8f8;
 }
 
+.calc-input-hint {
+  margin: 8px 0 0;
+  color: #8a5a00;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
 .calc-checkbox-row {
   display: inline-flex;
   align-items: center;

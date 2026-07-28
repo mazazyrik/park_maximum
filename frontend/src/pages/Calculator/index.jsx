@@ -26,11 +26,15 @@ async function geocodeYandex(query) {
   const data = await res.json()
   if (data.statusCode) return null
   const members = data.response?.GeoObjectCollection?.featureMember || []
-  return members.map((m) => {
-    const text = m.GeoObject.metaDataProperty.GeocoderMetaData.text
-    const [lon, lat] = m.GeoObject.Point.pos.split(' ').map(Number)
-    return { displayName: text, value: text, coords: [lat, lon] }
-  })
+  return members
+    .filter((m) => (
+      m.GeoObject.metaDataProperty.GeocoderMetaData.Address?.country_code === 'RU'
+    ))
+    .map((m) => {
+      const text = m.GeoObject.metaDataProperty.GeocoderMetaData.text
+      const [lon, lat] = m.GeoObject.Point.pos.split(' ').map(Number)
+      return { displayName: text, value: text, coords: [lat, lon] }
+    })
 }
 
 async function geocodeNominatim(query) {
@@ -39,6 +43,7 @@ async function geocodeNominatim(query) {
   url.searchParams.set('format', 'json')
   url.searchParams.set('limit', '7')
   url.searchParams.set('accept-language', 'ru')
+  url.searchParams.set('countrycodes', 'ru')
   const res = await fetch(url.toString(), { headers: { 'User-Agent': 'park-maximum.ru/1.0' } })
   const data = await res.json()
   return data.map((item) => ({
@@ -56,6 +61,13 @@ async function geocodeSearch(query) {
   } catch {
     try { return await geocodeNominatim(query) } catch { return [] }
   }
+}
+
+function findExactSuggestion(items, query) {
+  const normalizedQuery = query.trim().toLocaleLowerCase('ru-RU')
+  return items.find((item) => (
+    item.value.trim().toLocaleLowerCase('ru-RU') === normalizedQuery
+  ))
 }
 
 async function getOsrmDistance(fromCoords, toCoords) {
@@ -86,7 +98,9 @@ function SuggestInput({
   showSugg,
   onFocus,
   onBlur,
+  onKeyDown,
   inputRef,
+  isSelected,
 }) {
   return (
     <div>
@@ -99,8 +113,10 @@ function SuggestInput({
           onChange={(e) => onChange(e.target.value)}
           onFocus={onFocus}
           onBlur={onBlur}
+          onKeyDown={onKeyDown}
           placeholder={placeholder}
           className='calc-input'
+          aria-invalid={Boolean(value) && !isSelected}
         />
         <span className='calc-arrow'>›</span>
         {showSugg && suggestions.length > 0 && (
@@ -120,6 +136,11 @@ function SuggestInput({
           </div>
         )}
       </div>
+      {value && !isSelected && (
+        <p className='calc-input-hint'>
+          Выберите адрес из подсказок — расчёт запустится автоматически.
+        </p>
+      )}
     </div>
   )
 }
@@ -153,7 +174,10 @@ export default function Calculator() {
   const mapRef = useRef(null)
   const mapInstance = useRef(null)
   const mapInitDone = useRef(false)
-  const suggestTimer = useRef(null)
+  const fromSuggestTimer = useRef(null)
+  const toSuggestTimer = useRef(null)
+  const fromSuggestRequestId = useRef(0)
+  const toSuggestRequestId = useRef(0)
   const routeTimer = useRef(null)
   const routeRequestId = useRef(0)
   const toInputRef = useRef(null)
@@ -222,10 +246,18 @@ export default function Calculator() {
     setFromCoords(null)
     resetCalculatedRoute()
     setShowFromSugg(true)
-    clearTimeout(suggestTimer.current)
+    clearTimeout(fromSuggestTimer.current)
+    const requestId = fromSuggestRequestId.current + 1
+    fromSuggestRequestId.current = requestId
     if (!val.trim()) { setFromSugg([]); return }
-    suggestTimer.current = setTimeout(async () => {
+    fromSuggestTimer.current = setTimeout(async () => {
       const items = await geocodeSearch(val)
+      if (fromSuggestRequestId.current !== requestId) return
+      const exactItem = findExactSuggestion(items, val)
+      if (exactItem) {
+        selectFrom(exactItem)
+        return
+      }
       setFromSugg(items)
     }, 300)
   }
@@ -235,10 +267,18 @@ export default function Calculator() {
     setToCoords(null)
     resetCalculatedRoute()
     setShowToSugg(true)
-    clearTimeout(suggestTimer.current)
+    clearTimeout(toSuggestTimer.current)
+    const requestId = toSuggestRequestId.current + 1
+    toSuggestRequestId.current = requestId
     if (!val.trim()) { setToSugg([]); return }
-    suggestTimer.current = setTimeout(async () => {
+    toSuggestTimer.current = setTimeout(async () => {
       const items = await geocodeSearch(val)
+      if (toSuggestRequestId.current !== requestId) return
+      const exactItem = findExactSuggestion(items, val)
+      if (exactItem) {
+        selectTo(exactItem)
+        return
+      }
       setToSugg(items)
     }, 300)
   }
@@ -255,6 +295,14 @@ export default function Calculator() {
     setToCoords(item.coords)
     setToSugg([])
     setShowToSugg(false)
+  }
+
+  async function confirmAddress(value, coords, suggestions, onSelect) {
+    if (coords || !value.trim()) return
+    const items = suggestions.length > 0
+      ? suggestions
+      : await geocodeSearch(value)
+    if (items.length > 0) onSelect(items[0])
   }
 
   function resetCalculatedRoute() {
@@ -423,7 +471,19 @@ export default function Calculator() {
                 suggestions={fromSugg}
                 showSugg={showFromSugg}
                 onFocus={() => setShowFromSugg(fromSugg.length > 0)}
-                onBlur={() => setTimeout(() => setShowFromSugg(false), 160)}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setShowFromSugg(false)
+                    confirmAddress(from, fromCoords, fromSugg, selectFrom)
+                  }, 160)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !fromCoords) {
+                    event.preventDefault()
+                    confirmAddress(from, fromCoords, fromSugg, selectFrom)
+                  }
+                }}
+                isSelected={Boolean(fromCoords)}
               />
               <SuggestInput
                 label='Куда'
@@ -434,8 +494,20 @@ export default function Calculator() {
                 suggestions={toSugg}
                 showSugg={showToSugg}
                 onFocus={() => setShowToSugg(toSugg.length > 0)}
-                onBlur={() => setTimeout(() => setShowToSugg(false), 160)}
+                onBlur={() => {
+                  setTimeout(() => {
+                    setShowToSugg(false)
+                    confirmAddress(to, toCoords, toSugg, selectTo)
+                  }, 160)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !toCoords) {
+                    event.preventDefault()
+                    confirmAddress(to, toCoords, toSugg, selectTo)
+                  }
+                }}
                 inputRef={toInputRef}
+                isSelected={Boolean(toCoords)}
               />
             </div>
 
