@@ -19,6 +19,7 @@ CAR_PHOTO_FILES = {
     'Chery Tiggo': 'chery-tiggo.webp',
     'Toyota Camry': 'toyota-camry.webp',
     'Kia Optima': 'kia-optima.webp',
+    'Kia Carnival': 'kia-carnival.webp',
     'Belgee X70': 'belgee-x70.webp',
     'Chery Arrizo 8': 'chery-arrizo8.webp',
     'Mercedes Vito': 'mercedes-vito.webp',
@@ -74,6 +75,7 @@ TARIFFS_DATA = [
         'price_per_km': 50,
         'sort_order': 4,
         'cars': [
+            {'name': 'Kia Carnival', 'extra_price_per_km': 0, 'sort_order': 0},
             {'name': 'Mercedes Vito', 'extra_price_per_km': 5, 'sort_order': 1},
         ],
     },

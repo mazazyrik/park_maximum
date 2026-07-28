@@ -42,7 +42,10 @@ const FALLBACK_TARIFFS = [
     label: 'Минивен',
     price: '50 руб/км',
     extra: '+5 руб/км',
-    cars: [{ name: 'Mercedes Vito', image: IMAGES.mercedesVito }],
+    cars: [
+      { name: 'Kia Carnival', image: IMAGES.kiaCarnival },
+      { name: 'Mercedes Vito', image: IMAGES.mercedesVito },
+    ],
   },
   {
     id: 'minivan8',

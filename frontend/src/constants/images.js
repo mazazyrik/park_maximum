@@ -3,6 +3,7 @@ import heroRoadDesktopWebp from '../assets/images/hero-road-1600.webp'
 import heroRoadMobileAvif from '../assets/images/hero-road-800.avif'
 import heroRoadMobileWebp from '../assets/images/hero-road-800.webp'
 import logoHeader from '../assets/images/logo-header.webp'
+import kiaCarnival from '../assets/images/kia-carnival.webp'
 
 const STATIC_BASE = import.meta.env.VITE_STATIC_URL
   || 'https://cdn.jsdelivr.net/gh/mazazyrik/park_maximum@main/frontend/src/assets/images'
@@ -28,6 +29,7 @@ export const IMAGES = {
   cheryTiggo: staticImage('chery-tiggo.webp'),
   toyotaCamry: staticImage('toyota-camry.webp'),
   kiaOptima: staticImage('kia-optima.webp'),
+  kiaCarnival,
   belgeeX70: staticImage('belgee-x70.webp'),
   cheryArrizo8: staticImage('chery-arrizo8.webp'),
   mercedesVito: staticImage('mercedes-vito.webp'),
@@ -47,6 +49,7 @@ export const CAR_IMAGES = {
   'Chery Tiggo': IMAGES.cheryTiggo,
   'Toyota Camry': IMAGES.toyotaCamry,
   'Kia Optima': IMAGES.kiaOptima,
+  'Kia Carnival': IMAGES.kiaCarnival,
   'Belgee X70': IMAGES.belgeeX70,
   'Chery Arrizo 8': IMAGES.cheryArrizo8,
   'Mercedes Vito': IMAGES.mercedesVito,
